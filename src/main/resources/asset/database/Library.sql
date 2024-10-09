@@ -102,13 +102,12 @@ CREATE TABLE `Supplier` (
 );
 
 CREATE TABLE `Importing` (
-  `id` int AUTO_INCREMENT,
+  `id` int PRIMARY KEY AUTO_INCREMENT,
   `supplierID` int,
   `staffID` varchar(10) NOT NULL,
   `importDate` date DEFAULT (CURRENT_DATE),
   `fee` bigint DEFAULT 0,
   `isActive` bool DEFAULT 1,
-  PRIMARY KEY (`id`, `supplierID`)
 );
 
 CREATE TABLE `ImportDetail` (
