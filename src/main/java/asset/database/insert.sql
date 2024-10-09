@@ -79,13 +79,13 @@ INSERT INTO `BookCategory` (`categoryID`, `bookID`) VALUES
 
 -- Chèn dữ liệu vào bảng VersionOfBook
 INSERT INTO `VersionOfBook` (`ISBN`, `bookID`, `img`, `publisherID`, `edition`, `location`, `price`, `quantity`, `available`) VALUES
-('978-604-2-10764-5', 1, 'src/main/java/asset/img/30giaykhoahoc.webp', 2, '1st', 'Hà Nội', 100000, 50, 50),
-('978-604-2-23577-2', 2, 'src/main/java/asset/img/baovenguoitocao.jpg', 1, '2nd', 'TP.HCM', 120000, 40, 35),
-('978-604-3-40077-3', 3, 'src/main/java/asset/img/dacnhantam.jpg', 3, '3rd', 'Đà Nẵng', 150000, 30, 25),
-('978-604-3-40077-4', 4, 'src/main/java/asset/img/giaotiepbatkyai.png', 4, '1st', 'Huế', 110000, 40, 30),
-('978-604-3-40077-5', 5, 'src/main/java/asset/img/ketoanviahe.png', 5, '1st', 'Đà Lạt', 130000, 35, 20),
-('978-604-3-40077-6', 6, 'src/main/java/asset/img/kheoankheonoi.png', 6, '2nd', 'Hà Nội', 160000, 50, 45),
-('978-604-3-40077-7', 7, 'src/main/java/asset/img/khoahoc.webp', 7, '1st', 'TP.HCM', 175000, 25, 15),
+('978-604-2-10764-5', 1, '/asset/img/30giaykhoahoc.webp', 2, '1st', 'Hà Nội', 100000, 50, 50),
+('978-604-2-23577-2', 2, '/asset/img/baovenguoitocao.jpg', 1, '2nd', 'TP.HCM', 120000, 40, 35),
+('978-604-3-40077-3', 3, '/asset/img/dacnhantam.jpg', 3, '3rd', 'Đà Nẵng', 150000, 30, 25),
+('978-604-3-40077-4', 4, '/asset/img/giaotiepbatkyai.png', 4, '1st', 'Huế', 110000, 40, 30),
+('978-604-3-40077-5', 5, '/img/ketoanviahe.png', 5, '1st', 'Đà Lạt', 130000, 35, 20),
+('978-604-3-40077-6', 6, '/img/kheoankheonoi.png', 6, '2nd', 'Hà Nội', 160000, 50, 45),
+('978-604-3-40077-7', 7, '/asset/img/khoahoc.webp', 7, '1st', 'TP.HCM', 175000, 25, 15),
 ('978-604-3-40077-8', 8, 'src/main/java/asset/img/khoinghiep.jpg', 8, '2nd', 'Đà Nẵng', 200000, 20, 15),
 ('978-604-3-40077-9', 9, 'src/main/java/asset/img/nangtamanhhuong.png', 9, '1st', 'Huế', 195000, 45, 35),
 ('978-604-3-40078-0', 10, 'src/main/java/asset/img/sachtrangcntt.png', 10, '3rd', 'Đà Lạt', 220000, 30, 25);
@@ -105,9 +105,12 @@ INSERT INTO `Person` (`id`, `name`, `tel`, `address`, `schoolYear`, `isActive`) 
 
 -- Chèn dữ liệu vào bảng Role
 INSERT INTO `Role` (`id`, `name`) VALUES
-('01', 'Admin'),
-('02', 'Thủ thư'),
-('03', 'Độc giả');
+('AD', 'Admin'),
+('TT', 'Thủ thư'),
+('TK', 'Thủ kho'),
+('QL', 'Quản vý'),
+('GV', 'Giảng viên'),
+('SV', 'Sinh viên')
 
 -- Chèn dữ liệu vào bảng Account
 INSERT INTO `Account` (`id`, `password`, `positionID`) VALUES
@@ -181,7 +184,7 @@ INSERT INTO `Importing` (`supplierID`, `staffID`, `fee`) VALUES
 -- (3, '978-604-3-40077-4', 40),
 -- (4, '978-604-3-40077-5', 60),
 -- (5, '978-604-3-40077-6', 20),
--- (6, '978-604-3-40077-7', 70),
+-- (6, '978-604-3-40077-7', 70),z
 -- (7, '978-604-3-40077-8', 80),
 -- (8, '978-604-3-40077-9', 90),
 -- (9, '978-604-3-40078-0', 25),

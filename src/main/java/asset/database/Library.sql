@@ -114,7 +114,7 @@ CREATE TABLE `Importing` (
 CREATE TABLE `ImportDetail` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `importID` int,
-  `ISBN` varchar(10),
+  `ISBN` varchar(17),
   `quantity` int NOT NULL
 );
 
