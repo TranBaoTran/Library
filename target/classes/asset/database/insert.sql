@@ -7,10 +7,10 @@ INSERT INTO `Author` (`name`, `year`, `isActive`) VALUES
 ('Trác Nhã', 1929, 1),
 ('John C. Maxwell', 1947, 1),
 ('Bộ Thông tin và Truyền thông', null, 1),
-('Kevin Mitnick', 1963, 1),
-('Clifford Stoll', 1950, 1),
-('Tony Buổi Sáng', 1978, 1),
-('Dương Ngọc Duy', 1990, 1);
+('Kevin Mitnick', 1963, 0),
+('Clifford Stoll', 1950, 0),
+('Tony Buổi Sáng', 1978, 0),
+('Dương Ngọc Duy', 1990, 0);
 
 -- Chèn dữ liệu vào bảng Category
 INSERT INTO `Category` (`name`, `isActive`) VALUES
@@ -21,8 +21,8 @@ INSERT INTO `Category` (`name`, `isActive`) VALUES
 ('Phát triển bản thân', 1),
 ('Công nghệ', 1),
 ('Lịch sử', 1),
-('Marketing', 1),
-('Toán học', 1);
+('Marketing', 0),
+('Toán học', 0);
 
 
 -- Chèn dữ liệu vào bảng Publisher
@@ -35,8 +35,8 @@ INSERT INTO `Publisher` (`name`, `isActive`) VALUES
 ('Nhà xuất bản Thông tin và Truyền thông', 1),
 ('Nhà xuất bản Hồng Đức', 1),
 ('Nhà xuất bản Trẻ', 1),
-('Nhà xuất bản Thanh Niên', 1),
-('Nhà xuất bản Phụ Nữ', 1);
+('Nhà xuất bản Thanh Niên', 0),
+('Nhà xuất bản Phụ Nữ', 0);
 
 -- Chèn dữ liệu vào bảng Book
 INSERT INTO `Book` (`name`, `isActive`) VALUES
@@ -71,7 +71,6 @@ INSERT INTO `BookCategory` (`categoryID`, `bookID`) VALUES
 (1, 1),
 (2, 2),
 (2, 3),
-(5, 3),
 (4, 4),
 (2, 5),
 (5, 6),
@@ -85,7 +84,7 @@ INSERT INTO `BookCategory` (`categoryID`, `bookID`) VALUES
 INSERT INTO `VersionOfBook` (`ISBN`, `bookID`, `img`, `publisherID`, `edition`, `location`, `price`, `quantity`, `available`) VALUES
 ('978-604-2-28251-2', 1, './asset/img/book/30giaydienanh.png', 1, '1st', 'L1-A1', 140000, 50, 50),
 ('978-604-3-92743-6', 2, './asset/img/book/dacnhantam.jpg', 2, '3rd', 'L1-A2', 80000, 30, 25),
-('978-604-4-02274-1', 3, './asset/img/book/giaotiepbatkyai.png', 3, '1st', 'L1-B2', 50000, 40, 30),
+('978-604-4-02274-1', 3, './asset/img/book/giaotiepbatkyai.png', 3, 'L1-B2', 50000, 40, 30),
 ('978-604-7-78761-6', 4, './asset/img/book/ketoanviahe.png', 4, '1st', 'L1-B3', 130000, 35, 20),
 ('978-604-3-62922-4', 5, './asset/img/book/kheoankheonoi.png', 5, '2nd', 'L1-C1', 138000, 50, 45),
 ('978-604-553-860-4', 6, './asset/img/book/nangtamanhhuong.png', 3, '1st', 'L1-C3', 88000, 25, 15),
