@@ -107,7 +107,7 @@ CREATE TABLE `Importing` (
   `staffID` varchar(10) NOT NULL,
   `importDate` date DEFAULT (CURRENT_DATE),
   `fee` bigint DEFAULT 0,
-  `isActive` bool DEFAULT 1,
+  `isActive` bool DEFAULT 1
 );
 
 CREATE TABLE `ImportDetail` (
