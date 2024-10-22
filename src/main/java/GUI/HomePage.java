@@ -4,7 +4,14 @@
  */
 package GUI;
 
+import MyDesign.EventMenuSelected;
+import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 
 /**
  *
@@ -17,6 +24,49 @@ public class HomePage extends javax.swing.JFrame {
      */
     public HomePage() {
         initComponents();
+        setLocationRelativeTo(null);
+        initMoving(this);
+        Menu.addEventMenuSelected(new EventMenuSelected() {
+            @Override
+            public void selected(int index) {
+                switch(index){
+                    case 0:
+                        setForm(new BookGUI());
+                        break;
+                    case 1:
+                        setForm(new BorrowGUI());
+                        break;
+                    case 2:
+                        setForm(new ReaderGUI());
+                        break;
+                    case 3:
+                        setForm(new StaffGUI());
+                        break;    
+                    case 4:
+                        setForm(new AccountGUI());
+                        break; 
+                    case 5:
+                        setForm(new OtherGUI());
+                        break; 
+                    case 6:
+                        setForm(new StatisticGUI());
+                        break; 
+//                    default:
+//                        setForm(new BookGUI());
+                }
+            }
+            
+            private void setVisible(boolean b) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        });
+    }
+    
+    private void setForm(JComponent com) {
+        mainPanel.removeAll();
+        mainPanel.add(com);
+        mainPanel.repaint();
+        mainPanel.revalidate();
     }
 
     /**
@@ -36,7 +86,6 @@ public class HomePage extends javax.swing.JFrame {
         mainPanel = new MyDesign.PanelBorder_Basic();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setAlwaysOnTop(true);
         setBackground(new java.awt.Color(255, 255, 255));
         setForeground(java.awt.Color.orange);
 
@@ -103,7 +152,7 @@ public class HomePage extends javax.swing.JFrame {
                 .addComponent(PanelHead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)))
+                    .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -114,7 +163,9 @@ public class HomePage extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -131,6 +182,26 @@ public class HomePage extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_mainPanelKeyPressed
 
+    private int x;
+    private int y;
+
+    public void initMoving(JFrame fram) {
+        PanelHead.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                x = me.getX();
+                y = me.getY();
+            }
+
+        });
+        PanelHead.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent me) {
+                fram.setLocation(me.getXOnScreen() - x, me.getYOnScreen() - y);
+            }
+        });
+    }
+    
     /**
      * @param args the command line arguments
      */
