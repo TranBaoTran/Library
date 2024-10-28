@@ -47,7 +47,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
                 null,                 // Return Date (null if not returned yet)
                 false,                // Delay status (false = no delay)
                 0,                    // Fine amount (no fine in this case)
-                false,                 // Is Active (true = currently active)
+                true,                 // Is Active (true = currently active)
                 borrowDetails         // List of BorrowDetailDTO
         );
         borrowReceipt1.setBorrowDTO(borrowDTO);

@@ -9,12 +9,22 @@ package DTO;
  * @author User
  */
 public class AuthorDTO {
+
+    public AuthorDTO(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
     private int id;
     private String name;
     private int year;
 
     public AuthorDTO(int id, String name, int year) {
         this.id = id;
+        this.name = name;
+        this.year = year;
+    }
+
+    public AuthorDTO(String name, int year) {
         this.name = name;
         this.year = year;
     }

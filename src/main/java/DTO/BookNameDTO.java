@@ -8,20 +8,18 @@ package DTO;
  *
  * @author User
  */
-public class PublisherDTO {
+public class BookNameDTO {
 
-    public PublisherDTO(String name) {
+    public BookNameDTO(String name) {
         this.name = name;
     }
-    private int id;
-    private String name;
 
-    public PublisherDTO(int id, String name) {
+    public BookNameDTO(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public PublisherDTO() {
+    public BookNameDTO() {
     }
 
     public int getId() {
@@ -39,4 +37,6 @@ public class PublisherDTO {
     public void setName(String name) {
         this.name = name;
     }
+    private int id;
+    private String name;
 }
