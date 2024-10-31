@@ -9,12 +9,15 @@ package DTO;
  * @author User
  */
 public class BorrowDetailDTO {
+
+    private int borrowID;
     private String ISBN;
     private String bookName;
     private String description;
     private int quantity;
     private int lost;
     private int broke;
+
 
     public BorrowDetailDTO(String ISBN, String bookName, String description, int quantity, int lost, int broke) {
         this.ISBN = ISBN;
@@ -23,6 +26,22 @@ public class BorrowDetailDTO {
         this.quantity = quantity;
         this.lost = lost;
         this.broke = broke;
+    }
+
+    public BorrowDetailDTO(int borrowID, String ISBN, String bookName, String description, int quantity) {
+        this.borrowID = borrowID;
+        this.ISBN = ISBN;
+        this.bookName = bookName;
+        this.description = description;
+        this.quantity = quantity;
+    }
+    
+    public int getBorrowID() {
+        return borrowID;
+    }
+
+    public void setBorrowID(int borrowID) {
+        this.borrowID = borrowID;
     }
 
     public BorrowDetailDTO() {

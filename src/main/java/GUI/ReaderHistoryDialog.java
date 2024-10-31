@@ -32,9 +32,9 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
         // Create a BorrowDTO object
         BorrowDTO borrowDTO = new BorrowDTO(
                 101,                  // ID
-                1001,                 // Reader ID
+                "SV10001",                 // Reader ID
                 "John Doe",           // Reader Name
-                2001,                 // Staff ID
+                "staff",                 // Staff ID
                 "Jane Smith",         // Staff Name
                 LocalDate.of(2024, 10, 1),   // Borrow Date
                 LocalDate.of(2024, 10, 30),  // Due Date

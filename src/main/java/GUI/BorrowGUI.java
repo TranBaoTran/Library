@@ -4,20 +4,34 @@
  */
 package GUI;
 
+import BUS.BorrowBUS;
+import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author User
  */
 public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
+
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
+    BorrowBUS borrowBus = new BorrowBUS();
+    BorrowDetailBUS borrowDetailBus = new BorrowDetailBUS();
+
     /**
      * Creates new form BorrowGUI
      */
@@ -27,32 +41,398 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        BorrowDetailDTO detail1 = new BorrowDetailDTO("978-0-123456-47-2", "Book One", "First book description", 5, 1, 0);
-        BorrowDetailDTO detail2 = new BorrowDetailDTO("978-0-987654-32-1", "Book Two", "Second book description", 3, 0, 1);
 
-        // Add BorrowDetailDTO instances to a Vector
-        Vector<BorrowDetailDTO> borrowDetails = new Vector<>();
-        borrowDetails.add(detail1);
-        borrowDetails.add(detail2);
+        loadBorrowDetail(bookBorrowTable);
+        loadBorrowData(borrowReceiptTable);
 
-        // Create a BorrowDTO object
-        BorrowDTO borrowDTO = new BorrowDTO(
-                101,                  // ID
-                1001,                 // Reader ID
-                "John Doe",           // Reader Name
-                2001,                 // Staff ID
-                "Jane Smith",         // Staff Name
-                LocalDate.of(2024, 10, 1),   // Borrow Date
-                LocalDate.of(2024, 10, 30),  // Due Date
-                null,                 // Return Date (null if not returned yet)
-                false,                // Delay status (false = no delay)
-                0,                    // Fine amount (no fine in this case)
-                false,                 // Is Active (true = currently active)
-                borrowDetails         // List of BorrowDetailDTO
-        );
-        borrowReceipt1.setBorrowDTO(borrowDTO);
-        borrowReceipt1.showBorrowReceipt();
-        System.out.println(1);
+        staffIDLb.setText("TT00000001");
+        searchEvent();
+        readerEvent();
+        ISBNEvent();
+        quantityEvent();
+        updateDescriptionEvent();
+        scanButton2.addActionListener(evt -> addBorrowing());
+        borrowDetailClick();
+    }
+
+    /*==============================  XỬ LÝ EVENT  ==================================*/
+    //xử lý sự kiện khi tìm kiếm phiếu mượn
+    private void searchEvent() {
+        txtFindBorrowReceipt.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                performSearch();
+            }
+        });
+
+        returnedCheckBox.addActionListener(evt -> {
+            performSearch();
+        });
+
+        notReturnedCheckBox.addActionListener(evt -> {
+            performSearch();
+        });
+
+        jLabel9.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                performSearch(); // Gọi hàm search khi nhấn vào jLabel9
+            }
+        });
+    }
+
+    //xử lý sự kiện khi nhập mã đọc giả
+    private void readerEvent() {
+        // Lắng nghe sự kiện nhấn Enter trên readerIDTextField
+        readerIDTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isFocusHandled = true;  // Đặt cờ sau khi nhấn Enter
+                handleReaderID();
+            }
+        });
+
+        // Lắng nghe sự kiện khi con trỏ chuột rời khỏi readerIDTextField (mất focus)
+        readerIDTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (!isFocusHandled) {
+                    handleReaderID();
+                }
+                isFocusHandled = false;
+            }
+        });
+    }
+
+    private void ISBNEvent() {
+        // Lắng nghe sự kiện nhấn Enter trên ISBNTextField
+        ISBNTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isFocusHandled = true;
+                handleISBN();  // Đặt cờ sau khi nhấn Enter
+            }
+        });
+
+        // Lắng nghe sự kiện khi con trỏ chuột rời khỏi readerIDTextField (mất focus)
+        ISBNTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (!isFocusHandled) {
+                    handleISBN();
+                }
+                isFocusHandled = false;  // Đặt cờ sau khi nhấn Enter
+            }
+        });
+    }
+
+    private void quantityEvent() {
+        addBookButton.addActionListener(evt -> {
+            int new_quantity = (Integer) jSpinner1.getValue() + 1;
+            jSpinner1.setValue(new_quantity);
+        });
+        delBookButton.addActionListener(evt -> {
+            int new_quantity = (Integer) jSpinner1.getValue() - 1;
+            jSpinner1.setValue(new_quantity);
+        });
+        jSpinner1.addChangeListener(evt -> handleAddOrUpdateBook(isUpdateQuantity));
+    }
+
+    private void updateDescriptionEvent() {
+        bookBorrowTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+                if (column == 2) { // Kiểm tra nếu ô cập nhật là ô mô tả
+                    String newDescription = (String) bookBorrowTable.getValueAt(row, column);
+                    BorrowDetailDTO borrowDetail = tempBorrowDetails.get(row);
+                    if (borrowDetail != null) {
+                        String ISBN = borrowDetail.getISBN();
+                        updateDescription(ISBN, newDescription);
+                    }
+                }
+            }
+        });
+    }
+
+    private void borrowDetailClick() {
+        borrowReceiptTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = borrowReceiptTable.getSelectedRow();
+
+                if (selectedRow != -1) { // Kiểm tra nếu có dòng được chọn
+                    // Giả sử borrowID là cột đầu tiên (cột 0) trong bảng borrowReceiptTable
+                    int borrowID = (int) borrowReceiptTable.getValueAt(selectedRow, 0);
+
+                    // Lấy danh sách chi tiết mượn từ BorrowDetailBus
+                    Vector<BorrowDetailDTO> borrowDetails = borrowDetailBus.getBorrowDetails(borrowID);
+
+                    BorrowDTO borrowDTO = borrowBus.selectABorrow(borrowID);
+                    borrowDTO.setBorrowDetailDTO(borrowDetails);
+
+                    // Thiết lập và hiển thị biên lai mượn
+                    borrowReceipt1.setBorrowDTO(borrowDTO);
+                    borrowReceipt1.showBorrowReceipt();
+                }
+
+                // Đăng ký listener để nhận thông báo
+                borrowReceipt1.addBorrowListener(new BorrowListener() {
+                    @Override
+                    public void onBookReturned() {
+                        loadBorrowData(borrowReceiptTable);
+                    }
+                });
+            }
+        });
+
+    }
+
+    /*==============================  XỬ LÝ BORROW  ==================================*/
+    public void loadBorrowData(javax.swing.JTable borrowReceiptTable) {
+        List<BorrowDTO> borrowList = borrowBus.sellectAll();
+        // Tạo mô hình bảng
+        DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
+        model.setRowCount(0);
+
+        for (BorrowDTO borrow : borrowList) {
+            Object[] row = new Object[]{
+                borrow.getId(),
+                borrow.getReaderName(),
+                borrow.getBorrowDate(),
+                borrow.getReturnDate(),
+                borrow.isIsActive() ? "Đang mượn" : "Đã trả" // Thay đổi theo tình trạng
+            };
+            model.addRow(row);
+        }
+    }
+
+    public void searchBorrowData(javax.swing.JTable borrowReceiptTable, String keyword, boolean isReturned, boolean isNotReturned) {
+        List<BorrowDTO> borrowList = borrowBus.sellectAll();
+        DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
+        model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
+
+        for (BorrowDTO borrow : borrowList) {
+            // Kiểm tra từ khóa có tồn tại trong tên người đọc hoặc ID phiếu mượn
+            boolean matchesKeyword = keyword.isEmpty()
+                    || borrow.getReaderName().toLowerCase().contains(keyword.toLowerCase())
+                    || String.valueOf(borrow.getId()).contains(keyword);
+
+            // Kiểm tra trạng thái (Đã trả hoặc Chưa trả)
+            boolean matchesStatus = !isReturned && !isNotReturned
+                    || (isReturned && !borrow.isIsActive()) || (isNotReturned && borrow.isIsActive());
+
+            // Chỉ thêm vào bảng nếu thỏa mãn cả từ khóa và trạng thái
+            if (matchesKeyword && matchesStatus) {
+                Object[] row = new Object[]{
+                    borrow.getId(),
+                    borrow.getReaderName(),
+                    borrow.getBorrowDate(),
+                    borrow.getReturnDate(),
+                    borrow.isIsActive() ? "Đang mượn" : "Đã trả"
+                };
+                model.addRow(row);
+            }
+        }
+    }
+
+    private void performSearch() {
+        String keyword = txtFindBorrowReceipt.getText().trim(); // Lấy từ khóa từ ô tìm kiếm
+        boolean isReturned = returnedCheckBox.isSelected();            // Kiểm tra trạng thái "Đã trả"
+        boolean isNotReturned = notReturnedCheckBox.isSelected();       // Kiểm tra trạng thái "Chưa trả"
+
+        searchBorrowData(borrowReceiptTable, keyword, isReturned, isNotReturned);
+    }
+
+    private void addBorrow() {
+
+    }
+
+    /*===========================XỬ LÝ BORROW DETAIL ==================================*/
+    // Nạp dữ liệu vào bảng từ list lưu trữ tạm thời "tempBorrowDetails"    
+    private void loadBorrowDetail(javax.swing.JTable bookBorrowTable) {
+        DefaultTableModel model = (DefaultTableModel) bookBorrowTable.getModel();
+        model.setRowCount(0);
+
+        for (BorrowDetailDTO borrowDetail : tempBorrowDetails) {
+            Object[] row = {
+                borrowDetail.getBookName(), // Tên sách
+                borrowDetail.getQuantity(), // Số lượng
+                borrowDetail.getDescription() // Mô tả
+            };
+            model.addRow(row);
+        }
+    }
+
+    private boolean handleAddOrUpdateBook(boolean flag) {
+        String ISBN = ISBNTextField.getText().trim();
+        String readerID = readerIDTextField.getText().trim();
+        int quantity = (Integer) jSpinner1.getValue();
+
+        if (!flag) {
+            return false;
+        }
+
+        if (isValidInput(ISBN, readerID, quantity)) {
+            processTemporaryBorrowDetail(ISBN, quantity);
+        } else {
+            JOptionPane.showMessageDialog(null, "Vui lòng nhập đủ thông tin", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return true;
+    }
+
+    private boolean isValidInput(String ISBN, String readerID, int quantity) {
+        return !readerID.isEmpty() && !ISBN.isEmpty() && quantity >= 0;
+    }
+
+    //xử lý thêm borrowDetail vào bộ nhớ tạm thời
+    public void processTemporaryBorrowDetail(String ISBN, int quantity) {
+        if (borrowBus.checkBooksInStock(ISBN, quantity)) {
+            // nếu chưa có sách trong list thì thêm vào
+            if (findBorrowDetailByISBN(ISBN) == null && quantity > 0) {
+                BorrowDetailDTO borrowDetail = new BorrowDetailDTO();
+                String bookName = borrowBus.getBookNameByISBN(ISBN);
+                borrowDetail.setISBN(ISBN);
+                borrowDetail.setBookName(bookName);
+                borrowDetail.setQuantity(quantity);
+                tempBorrowDetails.add(borrowDetail);
+                JOptionPane.showMessageDialog(null, "Đã thêm vào bộ nhớ tạm thời");
+            } else {
+                //ngược lại cập nhật nếu số lượng lớn 0, xóa nếu nhỏ hơn 0
+                updateOrDelTemporaryBorrowDetail(ISBN, quantity);
+            }
+
+            loadBorrowDetail(bookBorrowTable);
+            jSpinner1.setValue(quantity);
+        } else {
+            JOptionPane.showMessageDialog(null, "Kho hiện không đủ sách", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+    }
+
+    // Cập nhật quantity của borrowDetail vào list tạm thời
+    public void updateOrDelTemporaryBorrowDetail(String ISBN, int quantity) {
+        BorrowDetailDTO existingDetail = findBorrowDetailByISBN(ISBN);
+
+        if (existingDetail != null) {
+            if (quantity > 0) {
+                existingDetail.setQuantity(quantity);
+                JOptionPane.showMessageDialog(null, "Đã cập nhật số lượng trong bộ nhớ tạm thời");
+            } else {
+                tempBorrowDetails.remove(existingDetail);
+                JOptionPane.showMessageDialog(null, "Đã xóa khỏi bộ nhớ tạm thời");
+            }
+        }
+    }
+
+    // Cập nhật description của borrowDetail vào list tạm thời
+    public void updateDescription(String ISBN, String description) {
+        BorrowDetailDTO existingDetail = findBorrowDetailByISBN(ISBN);
+
+        if (existingDetail != null) {
+            existingDetail.setDescription(description);
+            JOptionPane.showMessageDialog(null, "Đã cập nhật trong bộ nhớ tạm thời");
+        } else {
+            JOptionPane.showMessageDialog(null, "Đã có lỗi xảy ra");
+        }
+    }
+
+    //tìm xem ISBN đã tồn tại trong list tạm thời chưa
+    private BorrowDetailDTO findBorrowDetailByISBN(String ISBN) {
+        for (BorrowDetailDTO detail : tempBorrowDetails) {
+            if (detail.getISBN().equals(ISBN)) {
+                return detail;
+            }
+        }
+        return null;
+    }
+
+    // lấy tất cả ds detail trong bộ nhớ tạm thời
+    public List<BorrowDetailDTO> getTempBorrowDetails() {
+        return tempBorrowDetails;
+    }
+
+    /*=========================== XỬ LÝ TẠO PHIẾU ==================================*/
+    private void addBorrowing() {
+        String reader = readerIDTextField.getText();
+        String staff = staffIDLb.getText();
+        Date dueDate = dueDateChooser.getDate();
+
+        if (reader != null && staff != null) {
+            java.sql.Date sqlDueDate = new java.sql.Date(dueDate.getTime());
+            int borrowID = borrowBus.add(reader, staff, sqlDueDate);
+            for (BorrowDetailDTO tempBorrowDetail : tempBorrowDetails) {
+                addBorrowDetail(tempBorrowDetail, borrowID);
+                borrowBus.updateAvailable(tempBorrowDetail.getISBN(), -tempBorrowDetail.getQuantity());
+            }
+
+            JOptionPane.showMessageDialog(null, "Thành công", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            loadBorrowData(borrowReceiptTable);
+        } else {
+            JOptionPane.showMessageDialog(null, "Thông tin độc giả hoặc nhân viên không hợp lệ", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void addBorrowDetail(BorrowDetailDTO borrowDetail, int borrowID) {
+        if (borrowDetail.getISBN() != null && borrowDetail.getQuantity() > 0) {
+            borrowDetail.setBorrowID(borrowID);
+            borrowDetailBus.add(borrowDetail);
+        }
+    }
+
+    /*=========================== CÁC HÀM HỔ TRỢ ==================================*/
+    // Phương thức chung để xử lý logic tìm kiếm tên độc giả
+    private void handleReaderID() {
+        String readerID = readerIDTextField.getText().trim();
+
+        if (!readerID.isEmpty()) {
+            // Gọi BUS để lấy tên độc giả
+            String readerName = borrowBus.getPersonNameById(readerID);
+
+            if (readerName != null) {
+                // gọi BUS để xem độc giả có đang bị khóa không
+                if (borrowBus.checkReaderIDIsLocked(readerID)) {
+                    JOptionPane.showMessageDialog(null, "Độc giả đã bị khóa", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    readerIDTextField.setText("");
+                } else if (borrowBus.checkReaderIsBorrowing(readerID)) {
+                    JOptionPane.showMessageDialog(null, "Độc giả vẫn chưa trả sách", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    readerIDTextField.setText("");
+                } else {
+                    readerNameLb.setText(readerName);
+//                    ISBNTextField.requestFocusInWindow();
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Độc giả không tồn tại", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                readerIDTextField.setText("");
+            }
+        }
+    }
+
+    private void handleISBN() {
+        String ISBN = ISBNTextField.getText().trim();
+
+        if (!ISBN.isEmpty()) {
+            if (borrowBus.checkISBNExistence(ISBN)) {
+                isUpdateQuantity = false;
+                if (findBorrowDetailByISBN(ISBN) != null) {
+                    jSpinner1.setValue(findBorrowDetailByISBN(ISBN).getQuantity());
+                    focusOnRowWithISBN(ISBN);
+                } else {
+                    jSpinner1.setValue(0);
+                }
+                isUpdateQuantity = true;
+            } else {
+                JOptionPane.showMessageDialog(null, "Mã sách không tồn tại", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                ISBNTextField.setText("");
+            }
+        }
+    }
+
+    //focus khi trong bảng đã có sách cùng iSBN
+    private void focusOnRowWithISBN(String ISBN) {
+        for (int row = 0; row < bookBorrowTable.getRowCount(); row++) {
+            String tableISBN = (String) bookBorrowTable.getValueAt(row, 0);
+            if (ISBN.equals(tableISBN)) {
+                bookBorrowTable.setRowSelectionInterval(row, row);
+                bookBorrowTable.scrollRectToVisible(bookBorrowTable.getCellRect(row, 0, true));
+                break;
+            }
+        }
     }
 
     /**
@@ -384,25 +764,46 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
 
         } catch (Exception e1) {
             // TODO Auto-generated catch block
-            JOptionPane.showMessageDialog(null,e1.getMessage());
+            JOptionPane.showMessageDialog(null, e1.getMessage());
         }
     }//GEN-LAST:event_txtFindBorrowReceiptActionPerformed
 
     private void scanReaderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanReaderButtonActionPerformed
         // TODO add your handling code here:
+        isScanningReaderID = true;
+        isScanningISBN = false;
         scannerDialog.initAndShowGUI(this);
     }//GEN-LAST:event_scanReaderButtonActionPerformed
 
     private void scanButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanButton1ActionPerformed
         // TODO add your handling code here:
-         scannerDialog.initAndShowGUI(this);
+        isScanningReaderID = false;
+        isScanningISBN = true;
+        scannerDialog.initAndShowGUI(this);
     }//GEN-LAST:event_scanButton1ActionPerformed
-    
+
     @Override
     public void onBarcodeScanned(String barcode) {
         idScan = barcode;
         System.out.println("Scanned barcode in MainClass: " + barcode);
+
+        if (isScanningReaderID) {
+            readerIDTextField.setText(barcode);
+            ISBNTextField.requestFocusInWindow();
+            handleReaderID();
+        } else if (isScanningISBN) {
+            ISBNTextField.setText(barcode);
+            handleISBN();
+        }
     }
+
+    // Biến cờ để kiểm tra trạng thái quét
+    private boolean isScanningReaderID = false;
+    private boolean isScanningISBN = false;
+    private boolean isUpdateQuantity = true;
+    private boolean isFocusHandled = false;
+//    private List<BorrowDetailDTO> borrowDetailListCache = new ArrayList<>(); // Lưu tạm thời thông tin BorrowDetailDTO
+    private List<BorrowDetailDTO> tempBorrowDetails = new ArrayList<>();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private MyDesign.MyTextField_Basic ISBNTextField;

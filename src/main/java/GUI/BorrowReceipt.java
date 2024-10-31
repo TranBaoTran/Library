@@ -4,16 +4,21 @@
  */
 package GUI;
 
+import BUS.BorrowBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
 import MyDesign.MyLabel;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import javax.swing.JLabel;
+import java.util.Map;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -23,6 +28,7 @@ import javax.swing.SpinnerNumberModel;
  * @author User
  */
 public class BorrowReceipt extends javax.swing.JPanel {
+
     private GridBagConstraints detailGBC = new GridBagConstraints();
     private GridBagConstraints bookGBC = new GridBagConstraints();
     private MyLabel readerLb = new MyLabel("");
@@ -36,6 +42,14 @@ public class BorrowReceipt extends javax.swing.JPanel {
     private BorrowDTO borrowDTO;
     private int count = 0;
     private List<JSpinner> spinners = new ArrayList<>();
+    private boolean isUpdatingFineLabel = false; // Biến cờ để kiểm tra việc cập nhật
+
+    private int previousBrokenValue = 0;
+    // Khai báo map để lưu trữ ISBN cho mỗi JSpinner
+    private Map<JSpinner, String> spinnerISBNMap = new HashMap<>();
+    private List<BorrowListener> listeners = new ArrayList<>();
+    BorrowBUS borrowBUS = new BorrowBUS();
+
     /**
      * Creates new form BorrowReceipt
      */
@@ -43,32 +57,73 @@ public class BorrowReceipt extends javax.swing.JPanel {
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
         setUpDetail();
         showBorrowReceipt();
+
+        delayReturnButton.addActionListener(evt -> delayHandle());
+
+        returnButton.addActionListener(evt -> returnBookHandle());
     }
-    
-    public void showBorrowReceipt(){
-        if (borrowDTO == null){
+
+    private void delayHandle() {
+        if (borrowBUS.checkReaderHasDelayed(borrowDTO.getId())) {
+            JOptionPane.showMessageDialog(null, "Phiếu mượn đã gia hạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            LocalDate localDate = borrowDTO.getDueDate().plusDays(5); // Thêm 5 ngày kể từ dueDate
+            java.sql.Date newDate = java.sql.Date.valueOf(localDate); // Chuyển LocalDate sang java.sql.Date
+            if (new BorrowBUS().setDelay(borrowDTO.getId(), newDate)) {
+                JOptionPane.showMessageDialog(null, "Gia hạn thành công");
+                notifyBookReturned(); // Gọi thông báo sau khi gia hạn thành công
+            } else {
+                JOptionPane.showMessageDialog(null, "Đã xảy ra lỗi");
+            }
+        }
+    }
+
+    private void returnBookHandle() {
+        double fineAmount;
+        fineAmount = Double.parseDouble(fineLb.getText());
+
+        // Duyệt qua danh sách chi tiết mượn và cập nhật số lượng sách sẵn có
+        for (BorrowDetailDTO tempBorrowDetail : borrowDTO.getBorrowDetailDTO()) {
+            borrowBUS.updateAvailable(tempBorrowDetail.getISBN(), tempBorrowDetail.getQuantity());
+        }
+
+        // Thực hiện trả sách
+        boolean isReturned = borrowBUS.returnBook(borrowDTO.getId(), borrowDTO.getStaffID(), fineAmount);
+        if (isReturned) {
+            JOptionPane.showMessageDialog(this, "Trả sách thành công!");
+            notifyBookReturned(); // Gọi thông báo sau khi trả sách thành công
+        } else {
+            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi trả sách.");
+        }
+    }
+
+    public void showBorrowReceipt() {
+        if (borrowDTO == null) {
             jPanel1.setVisible(false);
-        }else{
+        } else {
             setBorrowReceipt();
         }
     }
-    
-    private void setBorrowReceipt(){
+
+    private void setBorrowReceipt() {
         jPanel1.setVisible(true);
+        lbMaPM.setText(borrowDTO.getId() + "");
         readerLb.setText(borrowDTO.getReaderName());
         staffLb.setText(borrowDTO.getStaffName());
         borrowDateLb.setText(convertLocalDateToString(borrowDTO.getBorrowDate()));
         dueDateLb.setText(convertLocalDateToString(borrowDTO.getDueDate()));
-        if (borrowDTO.getReturnDate() == null){
+        if (borrowDTO.getReturnDate() == null) {
             returnDateLb.setText("");
-        }else{
+        } else {
             returnDateLb.setText(convertLocalDateToString(borrowDTO.getReturnDate()));
         }
         fineLb.setText(String.valueOf(borrowDTO.getFine()));
         isReturn = borrowDTO.isIsActive();
-        if (isReturn){
+        System.out.println(borrowDTO.isIsActive());
+        if (!isReturn) {
             lbTrangThai.setText("Đã trả");
             lbTrangThai.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/Node.png")));
             lbTrangThai.setForeground(new java.awt.Color(18, 210, 49));
@@ -78,7 +133,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
             recieptDetail.setBackground(new java.awt.Color(242, 255, 244));
             delayReturnButton.setVisible(false);
             returnButton.setVisible(false);
-        }else{
+        } else {
             lbTrangThai.setText("Chưa trả");
             lbTrangThai.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/RedNode.png")));
             lbTrangThai.setForeground(new java.awt.Color(234, 38, 44));
@@ -91,174 +146,236 @@ public class BorrowReceipt extends javax.swing.JPanel {
         }
         setUpBook();
     }
-    
-    private String convertLocalDateToString(LocalDate localDate){
+
+    private String convertLocalDateToString(LocalDate localDate) {
         return localDate.format(formatter);
     }
-    
-    public void setBorrowDTO(BorrowDTO borrowDTO){
+
+    public void setBorrowDTO(BorrowDTO borrowDTO) {
         this.borrowDTO = borrowDTO;
     }
-    
-    private void setUpBook(){
+
+    private void setUpBook() {
         resetGridBagConstraints();
         bookGBC.weightx = 1;
         bookGBC.insets = new Insets(5, 5, 5, 5);
-        
-        for (BorrowDetailDTO bdDTO : borrowDTO.getBorrowDetailDTO()){
+
+        for (BorrowDetailDTO bdDTO : borrowDTO.getBorrowDetailDTO()) {
             bookGBC.gridx = 0;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("Tên sách", true), bookGBC);
-            
+
             bookGBC.gridx = 1;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(bdDTO.getBookName()), bookGBC);
-            
+
             count++;
-            
+
             bookGBC.gridx = 0;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("Mô tả", true), bookGBC);
-            
+
             bookGBC.gridx = 1;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(bdDTO.getDescription()), bookGBC);
-            
+
             count++;
-            
+
             bookGBC.gridx = 0;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("Số lượng", true), bookGBC);
-            
+
             bookGBC.gridx = 1;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(String.valueOf(bdDTO.getQuantity())), bookGBC);
-            
+
             count++;
-            
+
             bookGBC.gridx = 0;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("Mất", true), bookGBC);
-            
-            if (isReturn){
-                bookGBC.gridx = 1;
-                bookGBC.gridy = count;
-                bookGBC.anchor = GridBagConstraints.EAST;
-                bookContainer.add(new MyLabel(String.valueOf(bdDTO.getLost())), bookGBC);
-            }else{
+
+            if (isReturn) {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
                 JSpinner lostSpinner = new JSpinner(new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getBroke(), 1));
+                lostSpinner.setName("lostSpinner");
                 spinners.add(lostSpinner);
                 bookContainer.add(lostSpinner, bookGBC);
-            }
-            
-            count++;
-            
-            bookGBC.gridx = 0;
-            bookGBC.gridy = count;
-            bookGBC.anchor = GridBagConstraints.WEST;
-            bookContainer.add(new MyLabel("Hỏng", true), bookGBC);
-            
-            if (isReturn){
+                // Thêm lostSpinner và ISBN của nó vào map
+                spinnerISBNMap.put(lostSpinner, bdDTO.getISBN());
+
+                lostSpinner.addChangeListener(evt -> {
+                    int lostValue = (int) lostSpinner.getValue();
+                    double fineAmount = calculateFineForBrokenItems();
+                    updateFineLabel(fineAmount);
+                });
+
+            } else {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
                 bookContainer.add(new MyLabel(String.valueOf(bdDTO.getLost())), bookGBC);
-            }else{
+            }
+
+            count++;
+
+            bookGBC.gridx = 0;
+            bookGBC.gridy = count;
+            bookGBC.anchor = GridBagConstraints.WEST;
+            bookContainer.add(new MyLabel("Hỏng", true), bookGBC);
+
+            if (isReturn) {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
                 JSpinner brokenSpinner = new JSpinner(new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getLost(), 1));
+                // Đặt tên cho JSpinner để có thể nhận diện sau này
+                brokenSpinner.setName("brokenSpinner");
                 spinners.add(brokenSpinner);
                 bookContainer.add(brokenSpinner, bookGBC);
+
+                // Xử lý sự kiện khi thay đổi giá trị của brokenSpinner
+                brokenSpinner.addChangeListener(e -> {
+                    int brokenValue = (int) brokenSpinner.getValue();
+                    double fineAmount = calculateFineForBrokenItems();
+                    updateFineLabel(fineAmount);
+                });
+            } else {
+                bookGBC.gridx = 1;
+                bookGBC.gridy = count;
+                bookGBC.anchor = GridBagConstraints.EAST;
+                bookContainer.add(new MyLabel(String.valueOf(bdDTO.getLost())), bookGBC);
             }
-            
+
             count++;
-            
+
             bookGBC.gridx = 0;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("", true), bookGBC);
-            
+
             bookGBC.gridx = 1;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(""), bookGBC);
-            
+
             count++;
         }
+
     }
-    
-    private void resetGridBagConstraints(){
-        bookContainer.removeAll();  
-        bookContainer.revalidate(); 
-        bookContainer.repaint(); 
+
+    private void resetGridBagConstraints() {
+        bookContainer.removeAll();
+        bookContainer.revalidate();
+        bookContainer.repaint();
         count = 0;
         spinners.clear();
     }
-    
-    private void setUpDetail(){
+
+    private void setUpDetail() {
         detailGBC.weightx = 1;
         detailGBC.insets = new Insets(5, 5, 5, 5);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 0;
         detailGBC.anchor = GridBagConstraints.WEST;
         recieptDetail.add(new MyLabel("Độc giả", true), detailGBC);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 1;
         recieptDetail.add(new MyLabel("Ngày mượn", true), detailGBC);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 2;
         recieptDetail.add(new MyLabel("Ngày trả dự kiến", true), detailGBC);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 3;
         recieptDetail.add(new MyLabel("Ngày trả thực tế", true), detailGBC);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 4;
         recieptDetail.add(new MyLabel("Tiền phạt", true), detailGBC);
-        
+
         detailGBC.gridx = 0;
         detailGBC.gridy = 5;
         recieptDetail.add(new MyLabel("Nhân viên", true), detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 0;
         detailGBC.anchor = GridBagConstraints.EAST;
         recieptDetail.add(readerLb, detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 1;
         recieptDetail.add(borrowDateLb, detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 2;
         recieptDetail.add(dueDateLb, detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 3;
         recieptDetail.add(returnDateLb, detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 4;
         recieptDetail.add(fineLb, detailGBC);
-        
+
         detailGBC.gridx = 1;
         detailGBC.gridy = 5;
         recieptDetail.add(staffLb, detailGBC);
+    }
+
+    // Hàm cập nhật nhãn tiền phạt
+    private void updateFineLabel(double fineAmount) {
+        fineLb.setText(fineAmount + "");
+        // Kiểm tra lại thay đổi
+        fineLb.revalidate();
+        fineLb.repaint();
+    }
+
+    private double calculateFineForBrokenItems() {
+        double totalFine = 0;
+        double finePerBrokenItem = 30000; //phạt 30.000đ cho mỗi quyển sách hỏng
+
+        // Duyệt qua tất cả các thành phần trong `bookContainer` để lấy giá trị `brokenSpinner`
+        for (Component component : bookContainer.getComponents()) {
+            if (component instanceof JSpinner && "brokenSpinner".equals(component.getName())) {
+                int brokenValue = (int) ((JSpinner) component).getValue();
+                totalFine += brokenValue * finePerBrokenItem;
+            } else if (component instanceof JSpinner && "lostSpinner".equals(component.getName())) {
+                JSpinner spinner = (JSpinner) component;
+                String isbn = spinnerISBNMap.get(spinner);
+                double bookPrice = new BorrowBUS().selectPrice(isbn);
+
+                int lostValue = (int) ((JSpinner) component).getValue();
+                totalFine += lostValue * bookPrice;
+                System.out.println("ISBN của sách mất: " + bookPrice + ", Số lượng mất: " + lostValue);
+            }
+        }
+        return totalFine;
+    }
+
+    // Phương thức thêm listener
+    public void addBorrowListener(BorrowListener listener) {
+        listeners.add(listener);
+    }
+
+    // Phương thức để gọi khi trả sách thành công
+    private void notifyBookReturned() {
+        for (BorrowListener listener : listeners) {
+            listener.onBookReturned(); // Thông báo cho tất cả các listener
+        }
     }
 
     /**

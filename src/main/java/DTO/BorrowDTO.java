@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 public class BorrowDTO {
 
-    public BorrowDTO(int id, int readerID, int staffID, LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, boolean delay, long fine, boolean isActive, Vector<BorrowDetailDTO> borrowDetailDTO) {
+    public BorrowDTO(int id, String readerID, String staffID, LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, boolean delay, long fine, boolean isActive, Vector<BorrowDetailDTO> borrowDetailDTO) {
         this.id = id;
         this.readerID = readerID;
         this.staffID = staffID;
@@ -27,7 +27,7 @@ public class BorrowDTO {
         this.borrowDetailDTO = borrowDetailDTO;
     }
 
-    public BorrowDTO(int id, int readerID, String readerName, int staffID, String staffName, LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, boolean delay, long fine, boolean isActive, Vector<BorrowDetailDTO> borrowDetailDTO) {
+    public BorrowDTO(int id, String readerID, String readerName, String staffID, String staffName, LocalDate borrowDate, LocalDate dueDate, LocalDate returnDate, boolean delay, long fine, boolean isActive, Vector<BorrowDetailDTO> borrowDetailDTO) {
         this.id = id;
         this.readerID = readerID;
         this.readerName = readerName;
@@ -53,11 +53,11 @@ public class BorrowDTO {
         this.id = id;
     }
 
-    public int getReaderID() {
+    public String getReaderID() {
         return readerID;
     }
 
-    public void setReaderID(int readerID) {
+    public void setReaderID(String readerID) {
         this.readerID = readerID;
     }
 
@@ -69,11 +69,11 @@ public class BorrowDTO {
         this.readerName = readerName;
     }
 
-    public int getStaffID() {
+    public String getStaffID() {
         return staffID;
     }
 
-    public void setStaffID(int staffID) {
+    public void setStaffID(String staffID) {
         this.staffID = staffID;
     }
 
@@ -92,7 +92,7 @@ public class BorrowDTO {
     public void setDelay(boolean delay) {
         this.delay = delay;
     }
-
+    
     public long getFine() {
         return fine;
     }
@@ -142,9 +142,9 @@ public class BorrowDTO {
     }
     
     private int id;
-    private int readerID;
+    private String readerID;
     private String readerName;
-    private int staffID;
+    private String staffID;
     private String staffName;
     private LocalDate  borrowDate;
     private LocalDate  dueDate;
