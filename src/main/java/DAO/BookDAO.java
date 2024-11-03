@@ -5,8 +5,11 @@
 package DAO;
 
 import DTO.AuthorDTO;
+import DTO.BookDTO;
 import DTO.BookNameDTO;
 import DTO.CategoryDTO;
+import DTO.FullBookDTO;
+import DTO.ImportDTO;
 import DTO.PublisherDTO;
 import DTO.SupplierDTO;
 import connection.ConnectDB;
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Vector;
 
 /**
@@ -370,4 +374,260 @@ public class BookDAO {
         }
         return flag;
     }
+    
+    public boolean isBookSetUp(int bookID) throws SQLException{
+        boolean flag = false;
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT * 
+                             FROM book JOIN bookauthor ON book.id = bookauthor.bookID
+                                       JOIN author ON author.id = bookauthor.authorID
+                                       JOIN bookcategory ON book.id = bookcategory.bookID
+                                       JOIN category ON category.id = bookcategory.categoryID
+                             WHERE book.isActive = 1 AND book.id = ? """;
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, bookID);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   flag = true;
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
+    }
+    
+    public Vector<AuthorDTO> getBookAuthor(int id) throws SQLException{
+        Vector<AuthorDTO> result = new Vector<>();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT author.* 
+                             FROM book JOIN bookauthor ON book.id = bookauthor.bookID
+                             JOIN author ON author.id = bookauthor.authorID
+                             WHERE book.isActive = 1 AND book.id = ?""";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   AuthorDTO u = new AuthorDTO();
+                   u.setId(rs.getInt(1));
+                   u.setName(rs.getString(2));
+                   u.setYear(rs.getInt(3));
+                   result.add(u);
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return result;
+    }
+    
+    public Vector<CategoryDTO> getBookCategory(int id) throws SQLException{
+        Vector<CategoryDTO> result = new Vector<>();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT category.* 
+                             FROM book JOIN bookcategory ON book.id = bookcategory.bookID
+                             JOIN category ON category.id = bookcategory.categoryID
+                             WHERE book.isActive = 1 AND book.id = ?""";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   CategoryDTO u = new CategoryDTO();
+                   u.setId(rs.getInt(1));
+                   u.setName(rs.getString(2));
+                   result.add(u);
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return result;
+    }
+    
+    public FullBookDTO getFullBook(String ISBN) throws SQLException{
+        FullBookDTO fullbook = new FullBookDTO();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT ISBN, bookID, book.name AS bookName, img, publisherID, publisher.name, edition, price
+                             FROM versionofbook JOIN book ON versionofbook.bookID = book.id 
+                             JOIN publisher ON versionofbook.publisherID = publisher.id
+                             WHERE versionofbook.ISBN = ? """;
+                
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setString(1, ISBN);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   fullbook.setISBN(rs.getString(1));
+                   fullbook.setBookName(new BookNameDTO(rs.getInt(2), rs.getString(3)));
+                   fullbook.setImg(rs.getString(4));
+                   fullbook.setPublisher(new PublisherDTO(rs.getInt(5), rs.getString(6)));
+                   fullbook.setEdition(rs.getString(7));
+                   fullbook.setPrice(rs.getInt(8));
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return fullbook;
+    }
+    
+    public String isDifferentISBNExist(FullBookDTO fullbook) throws SQLException{
+        String ISBN = "";
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = "SELECT * FROM versionofbook WHERE versionofbook.bookID = ? AND versionofbook.publisherID = ? AND UPPER(versionofbook.edition) = UPPER(?)";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, fullbook.getBookName().getId());
+                stmt.setInt(2, fullbook.getPublisher().getId());
+                stmt.setString(3, fullbook.getEdition());
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   ISBN = rs.getString(1);
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return ISBN;
+    }
+    
+    public boolean AddImport(ImportDTO importReceipt) throws SQLException {
+        boolean flag = false;
+        connectDB.connect();
+
+        if (ConnectDB.conn != null) {
+            PreparedStatement preparedStatement = null;
+            try {
+                ConnectDB.conn.setAutoCommit(false); 
+
+                String sql = "INSERT INTO importing(supplierID, staffID, fee) VALUES (?, ?, ?)";
+                preparedStatement = ConnectDB.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                preparedStatement.setInt(1, importReceipt.getSupplier().getId());
+                preparedStatement.setString(2, importReceipt.getAccount().getId());
+                preparedStatement.setLong(3, importReceipt.getFee());
+
+                if (preparedStatement.executeUpdate() > 0) {
+                    int generatedID = -1; 
+                    ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        generatedID = generatedKeys.getInt(1);
+                    }
+
+                    for (FullBookDTO u : importReceipt.getFullbooks()) {
+                        switch (u.getStatus()) {
+                            case "ISBNExisted":
+                                sql = "UPDATE versionofbook SET quantity = quantity + ? WHERE ISBN = ?";
+                                try (PreparedStatement updateStatement = ConnectDB.conn.prepareStatement(sql)) {
+                                    updateStatement.setInt(1, u.getQuantity());
+                                    updateStatement.setString(2, u.getISBN());
+                                    updateStatement.executeUpdate();
+                                }
+                                break;
+
+                            case "bookNameExisted":
+                                sql = "INSERT INTO versionofbook(ISBN, bookID, img, publisherID, edition, price, quantity) values (?, ?, ?, ?, ?, ?, ?)";
+                                try (PreparedStatement insertStatement = ConnectDB.conn.prepareStatement(sql)) {
+                                    insertStatement.setString(1, u.getISBN());
+                                    insertStatement.setInt(2, u.getBookName().getId());
+                                    insertStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".png");
+                                    insertStatement.setInt(4, u.getPublisher().getId());
+                                    insertStatement.setString(5, u.getEdition());
+                                    insertStatement.setLong(6, u.getPrice());
+                                    insertStatement.setInt(7, u.getQuantity());
+                                    insertStatement.executeUpdate();
+                                }
+                                break;
+
+                            default:
+                                sql = "INSERT INTO bookauthor(authorID, bookID) values (?, ?)";
+                                for (AuthorDTO au : u.getAuthors()) {
+                                    try (PreparedStatement authorStatement = ConnectDB.conn.prepareStatement(sql)) {
+                                        authorStatement.setInt(1, au.getId());
+                                        authorStatement.setInt(2, u.getBookName().getId());
+                                        authorStatement.executeUpdate();
+                                    }
+                                }
+
+                                sql = "INSERT INTO bookcategory(categoryID, bookID) values (?, ?)";
+                                for (CategoryDTO cate : u.getCategories()) {
+                                    try (PreparedStatement categoryStatement = ConnectDB.conn.prepareStatement(sql)) {
+                                        categoryStatement.setInt(1, cate.getId());
+                                        categoryStatement.setInt(2, u.getBookName().getId());
+                                        categoryStatement.executeUpdate();
+                                    }
+                                }
+
+                                sql = "INSERT INTO versionofbook(ISBN, bookID, img, publisherID, edition, price, quantity) values (?, ?, ?, ?, ?, ?, ?)";
+                                try (PreparedStatement versionStatement = ConnectDB.conn.prepareStatement(sql)) {
+                                    versionStatement.setString(1, u.getISBN());
+                                    versionStatement.setInt(2, u.getBookName().getId());
+                                    versionStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".png");
+                                    versionStatement.setInt(4, u.getPublisher().getId());
+                                    versionStatement.setString(5, u.getEdition());
+                                    versionStatement.setLong(6, u.getPrice());
+                                    versionStatement.setInt(7, u.getQuantity());
+                                    versionStatement.executeUpdate();
+                                }
+                                break;
+                        }
+                    }
+
+                    sql = "INSERT INTO importdetail(importID, ISBN, quantity) values (?, ?, ?)";
+                    for (FullBookDTO u : importReceipt.getFullbooks()) {
+                        try (PreparedStatement detailStatement = ConnectDB.conn.prepareStatement(sql)) {
+                            detailStatement.setInt(1, generatedID);
+                            detailStatement.setString(2, u.getISBN());
+                            detailStatement.setInt(3, u.getQuantity());
+                            detailStatement.executeUpdate();
+                        }
+                    }
+
+                    ConnectDB.conn.commit();
+                    flag = true;
+                }
+
+            } catch (SQLException e) {
+                try {
+                    ConnectDB.conn.rollback(); 
+                } catch (SQLException rollbackException) {
+                    rollbackException.printStackTrace();
+                }
+                e.printStackTrace();
+
+            } finally {
+                connectDB.disconnect(); 
+            }
+        }
+
+        return flag;
+    }
+
+   
 }

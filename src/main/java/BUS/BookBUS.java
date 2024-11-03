@@ -8,6 +8,8 @@ import DAO.BookDAO;
 import DTO.AuthorDTO;
 import DTO.BookNameDTO;
 import DTO.CategoryDTO;
+import DTO.FullBookDTO;
+import DTO.ImportDTO;
 import DTO.PublisherDTO;
 import DTO.SupplierDTO;
 import java.io.IOException;
@@ -126,5 +128,30 @@ public class BookBUS {
                 return "Đã có lỗi xảy ra";
             }
         }
+    }
+    
+    public boolean checkBookName(int id) throws SQLException{
+        return bookDAO.isBookSetUp(id);
+    }
+    
+    public Vector<CategoryDTO> getBookCategory(int id) throws SQLException{
+        return bookDAO.getBookCategory(id);
+    }
+    
+    public Vector<AuthorDTO> getBookAuthor(int id) throws SQLException{
+        return bookDAO.getBookAuthor(id);
+    }
+    
+    public FullBookDTO getFullBook(String ISBN) throws SQLException{
+        FullBookDTO fullbook = bookDAO.getFullBook(ISBN);
+        return fullbook;
+    }
+    
+    public String isDifferentISBNExist(FullBookDTO fullbook) throws SQLException {
+        return bookDAO.isDifferentISBNExist(fullbook);
+    }
+    
+    public boolean AddImport(ImportDTO importing) throws SQLException{
+        return bookDAO.AddImport(importing);
     }
 }

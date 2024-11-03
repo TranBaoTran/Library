@@ -4,16 +4,25 @@
  */
 package GUI;
 
+import BUS.BookBUS;
 import DTO.AuthorDTO;
 import DTO.BookNameDTO;
 import DTO.CategoryDTO;
+import DTO.FullBookDTO;
 import DTO.PublisherDTO;
+import MyDesign.MyTextField_Basic;
 import java.awt.Image;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Vector;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -24,12 +33,10 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
     String imgURL = "";
-    Vector<AuthorDTO> authorDTOList = new Vector<AuthorDTO>();
-    Vector<CategoryDTO> categoryDTOList = new Vector<CategoryDTO>();
     AuthorDTO au = new AuthorDTO();
-    PublisherDTO pub = new PublisherDTO();
     CategoryDTO cate = new CategoryDTO();
-    BookNameDTO book = new BookNameDTO();
+    FullBookDTO fullbook = new FullBookDTO();
+    BookBUS bookBUS;
     /**
      * Creates new form AddBook
      */
@@ -39,24 +46,65 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        try {
+            bookBUS = new BookBUS();
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
+            Logger.getLogger(ChooseAuthorDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private void updateAuthorTable(){
         authorTable.setRowCount(0);
-        for(int i=0;i<authorDTOList.size();i++){
-            Object row[] = {authorDTOList.get(i).getName()};
+        for(int i=0;i<fullbook.getAuthors().size();i++){
+            Object row[] = {fullbook.getAuthors().get(i).getName()};
             authorTable.addRow(row);
         }
     }
     
     private void updateCategoryTable(){
         cateTable.setRowCount(0);
-        for(int i=0;i<categoryDTOList.size();i++){
-            Object row[] = {categoryDTOList.get(i).getName()};
+        for(int i=0;i<fullbook.getCategories().size();i++){
+            Object row[] = {fullbook.getCategories().get(i).getName()};
             cateTable.addRow(row);
         }
     }
 
+    public void disableSetUpBook(){
+        switch(fullbook.getStatus()){
+            case "bookNameExisted":
+                findAuthorButton.setVisible(false);
+                delAuthorButton.setVisible(false);
+                findCateButton.setVisible(false);
+                delCateButton.setVisible(false);
+                findBookNameButton.setVisible(true);
+                findPublisherButton.setVisible(true);
+                editionTextField.setEditable(true);
+                priceTextField.setEditable(true);
+                break;
+            case "ISBNExisted":
+                findAuthorButton.setVisible(false);
+                delAuthorButton.setVisible(false);
+                findCateButton.setVisible(false);
+                delCateButton.setVisible(false);
+                findBookNameButton.setVisible(false);
+                findPublisherButton.setVisible(false);
+                editionTextField.setEditable(false);
+                priceTextField.setEditable(false);
+                break;
+            default:
+                findAuthorButton.setVisible(true);
+                delAuthorButton.setVisible(true);
+                findCateButton.setVisible(true);
+                delCateButton.setVisible(true);
+                findBookNameButton.setVisible(true);
+                findPublisherButton.setVisible(true);
+                editionTextField.setEditable(true);
+                priceTextField.setEditable(true);
+                break;
+        }
+    }
+        
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -92,6 +140,8 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
         quantitySpinner = new javax.swing.JSpinner();
         delAuthorButton = new MyDesign.MyButton();
         delCateButton = new MyDesign.MyButton();
+        jLabel11 = new javax.swing.JLabel();
+        priceTextField = new MyDesign.MyTextField_Basic();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -128,6 +178,12 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel4.setText("ISBN\n\n");
+
+        ISBNTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ISBNTextFieldActionPerformed(evt);
+            }
+        });
 
         scanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/scan.png"))); // NOI18N
         scanButton.addActionListener(new java.awt.event.ActionListener() {
@@ -246,15 +302,27 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
             }
         });
 
+        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel11.setText("Giá tiền");
+
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pnImageBook, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pnImageBook, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addComponent(jLabel10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(quantitySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(priceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(panelBorder1Layout.createSequentialGroup()
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel7)
@@ -267,15 +335,9 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(editionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(67, 67, 67)
-                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(panelBorder1Layout.createSequentialGroup()
-                                .addComponent(quantitySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                     .addGroup(panelBorder1Layout.createSequentialGroup()
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING)
@@ -306,25 +368,20 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ISBNTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addGap(16, 16, 16)
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bookNameLabel))
+                        .addGap(19, 19, 19)
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(panelBorder1Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(pnImageBook, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(panelBorder1Layout.createSequentialGroup()
-                                .addGap(14, 14, 14)
-                                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(ISBNTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4))
-                                .addGap(16, 16, 16)
-                                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(bookNameLabel))
-                                .addGap(19, 19, 19)
-                                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                                        .addGap(47, 47, 47)
-                                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addGap(47, 47, 47)
+                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -337,7 +394,14 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
                         .addGap(43, 43, 43)
                         .addComponent(findAuthorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(delAuthorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(delAuthorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(pnImageBook, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(quantitySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -355,11 +419,15 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
                     .addGroup(panelBorder1Layout.createSequentialGroup()
                         .addGap(65, 65, 65)
                         .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(24, 24, 24)
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(quantitySpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(19, 19, 19))
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(priceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -386,29 +454,51 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     }//GEN-LAST:event_findCateButtonActionPerformed
 
     private void updateCategory(){
-        if ("".equals(cate.getName()) || cate.getName() == null){
+        if (cate.getName() == null || cate.getName().isBlank()){
             return;
         }
-        for(int i=0 ; i < categoryDTOList.size() ; i++){
-            if (cate.getId() == categoryDTOList.get(i).getId()){
+        for(int i=0 ; i < fullbook.getCategories().size() ; i++){
+            if (cate.getId() == fullbook.getCategories().get(i).getId()){
                 JOptionPane.showMessageDialog(null, "Đã chọn thể loại này");
                 cate.setName("");
                 return;
             }
         }
-        categoryDTOList.add(new CategoryDTO(cate.getId(), cate.getName()));
+        fullbook.getCategories().add(new CategoryDTO(cate.getId(), cate.getName()));
         cate.setName("");
         updateCategoryTable();
     }
     
     private void findBookNameButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findBookNameButtonActionPerformed
         // TODO add your handling code here:
-        ChooseBookDialog whid = new ChooseBookDialog(new javax.swing.JFrame(), true, this.book, this::updateBookName);
+        ChooseBookDialog whid = new ChooseBookDialog(new javax.swing.JFrame(), true, fullbook.getBookName(), this::updateBookName);
         whid.setVisible(true);
     }//GEN-LAST:event_findBookNameButtonActionPerformed
 
+    private void updateBookNameText(){
+        bookNameLabel.setText(fullbook.getBookName().getName());
+    }
+    
     private void updateBookName(){
-        bookNameLabel.setText(book.getName());
+        updateBookNameText();
+        try {
+            if (bookBUS.checkBookName(fullbook.getBookName().getId())){
+                fullbook.setAuthors(bookBUS.getBookAuthor(fullbook.getBookName().getId()));
+                fullbook.setCategories(bookBUS.getBookCategory(fullbook.getBookName().getId()));
+                updateAuthorTable();
+                updateCategoryTable();
+                fullbook.setStatus("bookNameExisted");
+            }else{
+                fullbook.getAuthors().clear();
+                fullbook.getCategories().clear();
+                updateAuthorTable();
+                updateCategoryTable();
+                fullbook.setStatus("bookNameNew");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddBook.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        disableSetUpBook();
     }
     
     private void findAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findAuthorButtonActionPerformed
@@ -418,33 +508,36 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     }//GEN-LAST:event_findAuthorButtonActionPerformed
 
     private void updateAuthor(){
-        if ("".equals(au.getName()) || au.getName() == null){
+        if (au.getName() == null || au.getName().isBlank()){
             return;
         }
-        for(int i=0 ; i < authorDTOList.size() ; i++){
-            if (au.getId() == authorDTOList.get(i).getId()){
+        for(int i=0 ; i < fullbook.getAuthors().size() ; i++){
+            if (au.getId() == fullbook.getAuthors().get(i).getId()){
                 JOptionPane.showMessageDialog(null, "Đã chọn tác giả này");
                 au.setName("");
                 return;
             }
         }
-        authorDTOList.add(new AuthorDTO(au.getId(), au.getName()));
+        fullbook.getAuthors().add(new AuthorDTO(au.getId(), au.getName()));
         au.setName("");
         updateAuthorTable();
     }
     
     private void findPublisherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPublisherButtonActionPerformed
         // TODO add your handling code here:
-        ChoosePublisherDialog whid = new ChoosePublisherDialog(new javax.swing.JFrame(), true, pub, this::updatePublisher);
+        ChoosePublisherDialog whid = new ChoosePublisherDialog(new javax.swing.JFrame(), true, fullbook.getPublisher(), this::updatePublisher);
         whid.setVisible(true);
     }//GEN-LAST:event_findPublisherButtonActionPerformed
 
     private void updatePublisher(){
-        publisherLabel.setText(pub.getName());
+        publisherLabel.setText(fullbook.getPublisher().getName());
     }
     
     private void lbImageBookMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbImageBookMouseClicked
         // TODO add your handling code here:
+        if(fullbook.getStatus().equals("ISBNExisted")){
+            JOptionPane.showMessageDialog(null, "Không thể chỉnh sửa ảnh của sách có sẵn");
+        }
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Chọn tệp ảnh .png, .jpg");            
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Tệp ảnh .png, .jpg", "png", "jpg");
@@ -455,7 +548,7 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
             if(selectedImagePath==null)
                 {
                     JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Không tìm thấy ảnh.","Thông Báo",JOptionPane.INFORMATION_MESSAGE);
-                    lbImageBook.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/AddImage.png")));
+                    lbImageBook.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/AddImage.png")));
                     imgURL = "";
                 }else {
                     JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Đã chọn ảnh: " + selectedImagePath);
@@ -469,8 +562,10 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
         // TODO add your handling code here:
         int row = authorTable.getSelectedRow();
         if (row >= 0) {
-            authorDTOList.remove(row);
+            fullbook.getAuthors().remove(row);
             updateAuthorTable();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn tác giả muốn bỏ.");
         }   
     }//GEN-LAST:event_delAuthorButtonActionPerformed
 
@@ -478,19 +573,83 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
         // TODO add your handling code here:
         int row = cateTable.getSelectedRow();
         if (row >= 0) {
-            categoryDTOList.remove(row);
+            fullbook.getCategories().remove(row);
             updateCategoryTable();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn thể loại muốn bỏ.");
         }  
     }//GEN-LAST:event_delCateButtonActionPerformed
 
+    private void ISBNTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ISBNTextFieldActionPerformed
+        // TODO add your handling code here:
+        String ISBN = ISBNTextField.getText().trim();
+        if (!ISBN.matches("^97[89]\\d{10}$")){
+            JOptionPane.showMessageDialog(null, "ISBN phải là thuộc cấu trúc ISBN-13");
+        }
+        try {
+            fullbook = bookBUS.getFullBook(ISBN);
+        } catch (SQLException ex) {
+            Logger.getLogger(AddBook.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (fullbook.getISBN() == null || fullbook.getISBN().isBlank()){
+            fullbook.setStatus("ISBNNew");
+        }else{
+            updateBookName();
+            setUpBookFromTable(false);
+            fullbook.setStatus("ISBNExisted");
+            lbImageBook.setIcon(new ImageIcon(new javax.swing.ImageIcon(getClass().getResource(fullbook.getImg())).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
+        }
+        disableSetUpBook();
+    }//GEN-LAST:event_ISBNTextFieldActionPerformed
+
+    public void setUpBookFromTable(boolean isFromTable){
+        updateAuthorTable();
+        updateCategoryTable();
+        editionTextField.setText(fullbook.getEdition());
+        updatePublisher();
+        priceTextField.setText(String.valueOf(fullbook.getPrice())); 
+        if (isFromTable){
+            updateBookNameText();
+            quantitySpinner.setValue(fullbook.getQuantity());
+            ISBNTextField.setText(fullbook.getISBN());
+            if ("ISBNExisted".equals(fullbook.getStatus()) || "reset".equals(fullbook.getStatus())){
+                lbImageBook.setIcon(new ImageIcon(new javax.swing.ImageIcon(getClass().getResource(fullbook.getImg())).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
+            }else{
+                lbImageBook.setIcon(new ImageIcon(new javax.swing.ImageIcon(fullbook.getImg()).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
+            }
+            disableSetUpBook();
+        }      
+    }
+    
+    public void resetBook(){
+        fullbook = new FullBookDTO();
+        fullbook.setQuantity(1);
+        fullbook.setImg("/asset/img/AddImage.png");
+        fullbook.setStatus("reset");
+        imgURL = "";
+        setUpBookFromTable(true);
+    }
+    
     @Override
     public void onBarcodeScanned(String barcode) {
         idScan = barcode;
-        System.out.println("Scanned barcode in MainClass: " + barcode);
+        ISBNTextField.setText(idScan);
     }
     
     public void getData(){
         
+    }
+    
+    public String getISBNTextField(){
+        return ISBNTextField.getText().trim();
+    }
+    
+    public String getEditionTextField(){
+        return editionTextField.getText().trim();
+    }
+    
+    public long getPriceTextField() throws NumberFormatException {
+        return Long.parseLong(priceTextField.getText().trim());
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -506,6 +665,7 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     private MyDesign.MyButton findCateButton;
     private MyDesign.MyButton findPublisherButton;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -517,8 +677,13 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     private javax.swing.JLabel lbImageBook;
     private MyDesign.PanelBorder panelBorder1;
     private MyDesign.PanelBorder_Basic pnImageBook;
+    private MyDesign.MyTextField_Basic priceTextField;
     private javax.swing.JLabel publisherLabel;
     private javax.swing.JSpinner quantitySpinner;
     private MyDesign.MyButton scanButton;
     // End of variables declaration//GEN-END:variables
+
+    public JSpinner getQuantitySpinner() {
+        return quantitySpinner;
+    }
 }
