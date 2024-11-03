@@ -51,6 +51,9 @@ public class HomePage extends javax.swing.JFrame {
                     case 6:
                         setForm(new StatisticGUI());
                         break; 
+                    case 7:
+                        setForm(new ImportGUI());
+                        break;
 //                    default:
 //                        setForm(new BookGUI());
                 }
