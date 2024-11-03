@@ -535,8 +535,9 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
     
     private void lbImageBookMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbImageBookMouseClicked
         // TODO add your handling code here:
-        if(fullbook.getStatus().equals("ISBNExisted")){
+        if(fullbook.getStatus() != null && fullbook.getStatus().equals("ISBNExisted")){
             JOptionPane.showMessageDialog(null, "Không thể chỉnh sửa ảnh của sách có sẵn");
+            return;
         }
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Chọn tệp ảnh .png, .jpg");            

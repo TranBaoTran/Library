@@ -556,7 +556,7 @@ public class BookDAO {
                                 try (PreparedStatement insertStatement = ConnectDB.conn.prepareStatement(sql)) {
                                     insertStatement.setString(1, u.getISBN());
                                     insertStatement.setInt(2, u.getBookName().getId());
-                                    insertStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".png");
+                                    insertStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".jpg");
                                     insertStatement.setInt(4, u.getPublisher().getId());
                                     insertStatement.setString(5, u.getEdition());
                                     insertStatement.setLong(6, u.getPrice());
@@ -588,7 +588,7 @@ public class BookDAO {
                                 try (PreparedStatement versionStatement = ConnectDB.conn.prepareStatement(sql)) {
                                     versionStatement.setString(1, u.getISBN());
                                     versionStatement.setInt(2, u.getBookName().getId());
-                                    versionStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".png");
+                                    versionStatement.setString(3, "/asset/img/book/" + u.getISBN() + ".jpg");
                                     versionStatement.setInt(4, u.getPublisher().getId());
                                     versionStatement.setString(5, u.getEdition());
                                     versionStatement.setLong(6, u.getPrice());
