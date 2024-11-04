@@ -52,12 +52,10 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="PanelHead" pref="1110" max="32767" attributes="0"/>
+              <Component id="PanelHead" pref="1008" max="32767" attributes="0"/>
               <Group type="102" attributes="0">
                   <Component id="Menu" min="-2" pref="136" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="mainPanel" min="-2" pref="968" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="872" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -65,10 +63,8 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <Component id="PanelHead" min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="mainPanel" max="32767" attributes="0"/>
-                      <Component id="Menu" pref="557" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="Menu" min="-2" pref="557" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -93,9 +89,14 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="775" max="32767" attributes="0"/>
                       <Component id="myButton1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="mainPanel" min="-2" pref="968" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -107,7 +108,9 @@
                           <Component id="myButton1" alignment="1" min="-2" pref="36" max="-2" attributes="0"/>
                           <Component id="jLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="14" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="mainPanel" pref="2" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -145,17 +148,17 @@
                 </Property>
               </Properties>
             </Component>
+            <Container class="MyDesign.PanelBorder_Basic" name="mainPanel">
+              <Events>
+                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="mainPanelKeyPressed"/>
+              </Events>
+
+              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+            </Container>
           </SubComponents>
         </Container>
         <Component class="GUI.Menu" name="Menu">
         </Component>
-        <Container class="MyDesign.PanelBorder_Basic" name="mainPanel">
-          <Events>
-            <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="mainPanelKeyPressed"/>
-          </Events>
-
-          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
-        </Container>
       </SubComponents>
     </Container>
   </SubComponents>

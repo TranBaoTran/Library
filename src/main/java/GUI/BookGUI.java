@@ -4,16 +4,26 @@
  */
 package GUI;
 
-import DTO.BookDTO;
-import java.util.Vector;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.table.DefaultTableModel;
+
+import DTO.AuthorDTO;
+import DTO.BookDTO;
+import DTO.CategoryDTO;
+import DTO.PublisherDTO;
 
 /**
  *
  * @author User
  */
 public class BookGUI extends javax.swing.JPanel {
+    private AuthorDTO authorDTO;
+    private CategoryDTO categoryDTO;
+    private PublisherDTO publisherDTO;
+    private BookDTO bookDTO;
 
     /**
      * Creates new form BookGUI
@@ -24,27 +34,40 @@ public class BookGUI extends javax.swing.JPanel {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        BookDTO bookDTO = new BookDTO(
-            "0-7687-5671-5",                      // ISBN
-            "Magnus Bane Chronicle",              // Title
-            "/asset/img/ExampleBook.png",         // Image Path
-            "NXB Kim Dong",                       // Publisher
-            new Vector<String>() {{ 
-                add("Cassandra Clare"); 
-                add("Sarah Rees Brennan"); 
-            }},                                   // Authors (using Vector)
-            new Vector<String>() {{ 
-                add("Fantasy"); 
-                add("Series"); 
-            }},                  // Genres
-            "1st",                                // Edition
-            "L1-A1",                              // Shelf Location
-            500000,                               // Price
-            10,                                   // Available Copies
-            10                                    // Total Copies
-        );
-        bookDetail.setBookDTO(bookDTO);
-        bookDetail.setBook();
+        // BookDTO bookDTO = new BookDTO(
+        //     "0-7687-5671-5",                      // ISBN
+        //     "Magnus Bane Chronicle",              // Title
+        //     "/asset/img/ExampleBook.png",         // Image Path
+        //     "NXB Kim Dong",                       // Publisher
+        //     new Vector<String>() {{ 
+        //         add("Cassandra Clare"); 
+        //         add("Sarah Rees Brennan"); 
+        //     }},                                   // Authors (using Vector)
+        //     new Vector<String>() {{ 
+        //         add("Fantasy"); 
+        //         add("Series"); 
+        //     }},                  // Genres
+        //     "1st",                                // Edition
+        //     "L1-A1",                              // Shelf Location
+        //     500000,                               // Price
+        //     10,                                   // Available Copies
+        //     10                                    // Total Copies
+        // );
+
+        // author data
+        authorDTO = new AuthorDTO();
+        loadAuthorData();
+
+        // category data
+        categoryDTO = new CategoryDTO();
+        loadCategoryData();
+
+        // NXB data
+        publisherDTO = new PublisherDTO();
+        loadNXBData();
+
+        bookDTO = new BookDTO();
+        loadBookData("");
     }
 
     /**
@@ -89,6 +112,15 @@ public class BookGUI extends javax.swing.JPanel {
         txtFindByISBN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtFindByISBNActionPerformed(evt);
+            }
+        });
+
+        btFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtFindByISBNActionPerformed(evt);
+                txtFindByNameActionPerformed(evt);
+                txtFindByISBN1ActionPerformed(evt);
+                cbAuthorCategoryPublisherActionPerformed(evt);
             }
         });
 
@@ -190,33 +222,28 @@ public class BookGUI extends javax.swing.JPanel {
         jLabel4.setText("Thể loại");
 
         cbAuthor.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
         cbAuthor.setBorder(null);
         cbAuthor.setOpaque(true);
         cbAuthor.setPreferredSize(new java.awt.Dimension(77, 28));
+        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setText("Tác giả");
 
         cbCategory.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbCategory.setBorder(null);
         cbCategory.setOpaque(true);
         cbCategory.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbCategory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbCategoryActionPerformed(evt);
-            }
-        });
+        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel6.setText("NXB");
 
         cbPublisher.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbPublisher.setBorder(null);
         cbPublisher.setOpaque(true);
         cbPublisher.setPreferredSize(new java.awt.Dimension(77, 28));
+        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nhà xuất bản" }));
 
         btFind.setText("Tìm kiếm");
 
@@ -239,6 +266,8 @@ public class BookGUI extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
+        clickBook();
+
         jScrollPane2.setViewportView(myTable1);
         if (myTable1.getColumnModel().getColumnCount() > 0) {
             myTable1.getColumnModel().getColumn(0).setResizable(false);
@@ -348,6 +377,12 @@ public class BookGUI extends javax.swing.JPanel {
         editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
         editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
+        editBookButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmDelete();
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -380,8 +415,9 @@ public class BookGUI extends javax.swing.JPanel {
 
     private void txtFindByISBNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByISBNActionPerformed
         String text = txtFindByISBN.getText().trim();
+        String searchSql = " AND v.ISBN LIKE '%" + text + "%'";
         try {
-            
+            loadBookData(searchSql);
         } catch (Exception e1) {
             // TODO Auto-generated catch block
             JOptionPane.showMessageDialog(null,e1.getMessage());
@@ -389,17 +425,167 @@ public class BookGUI extends javax.swing.JPanel {
     }//GEN-LAST:event_txtFindByISBNActionPerformed
 
     private void txtFindByNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByNameActionPerformed
-        // TODO add your handling code here:
+        String text = txtFindByName.getText().trim();
+        String searchSql = " AND b.name LIKE '%" + text + "%'";
+        try {
+            loadBookData(searchSql);
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            JOptionPane.showMessageDialog(null,e1.getMessage());
+        }
     }//GEN-LAST:event_txtFindByNameActionPerformed
 
     private void txtFindByISBN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByISBN1ActionPerformed
-        // TODO add your handling code here:
+        String text = txtFindByISBN1.getText().trim();
+        String searchSql = " AND v.edition LIKE '%" + text + "%'";
+        try {
+            loadBookData(searchSql);
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            JOptionPane.showMessageDialog(null,e1.getMessage());
+        }
     }//GEN-LAST:event_txtFindByISBN1ActionPerformed
 
-    private void cbCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCategoryActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbCategoryActionPerformed
+    private void cbAuthorCategoryPublisherActionPerformed(java.awt.event.ActionEvent evt) {
+        Object authorSelected = cbAuthor.getSelectedItem();
+        Object categorySelected = cbCategory.getSelectedItem();
+        Object publisherSelected = cbPublisher.getSelectedItem();
 
+        String authorSelectedText = "Tác giả";
+        if (authorSelected != null) {
+            authorSelectedText = authorSelected.toString();
+        }
+
+        String categorySelectedText = "Thể loại";
+        if (categorySelected != null) {
+            categorySelectedText = categorySelected.toString();
+        }
+
+        String publisherSelectedText = "Nhà xuất bản";
+        if (publisherSelected != null) {
+            publisherSelectedText = publisherSelected.toString();
+        }
+    
+        String searchSql = "";
+        if (authorSelectedText != "Tác giả") {
+            searchSql = searchSql + " AND a.name LIKE '%" + authorSelectedText + "%'"; // Tạo câu SQL điều kiện
+        }
+
+        if (categorySelected != "Thể loại") {
+            searchSql = searchSql + " AND c.name LIKE '%" + categorySelectedText + "%'"; // Tạo câu SQL điều kiện
+        }
+
+        if (publisherSelectedText != "Nhà xuất bản") {
+            searchSql = searchSql + " AND p.name LIKE '%" + publisherSelectedText + "%'"; // Tạo câu SQL điều kiện
+        }
+
+        try {
+            loadBookData(searchSql); // Gọi hàm để tải dữ liệu sách
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }   
+    }
+
+    // Load danh sách tác giả
+    private void loadAuthorData() {
+        List<String> authors = authorDTO.getAllAuthors();
+        cbAuthor.removeAllItems();
+        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
+        for (String author : authors) {
+            cbAuthor.addItem(author);
+        }
+    }
+
+    // Load danh sach category
+    private void loadCategoryData() {
+        List<String> categories = categoryDTO.getAllCategory();
+        cbCategory.removeAllItems();
+        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
+        for (String category : categories) {
+            cbCategory.addItem(category);
+        }
+    }
+
+    // Load danh sach nhà xuất bản
+    private void loadNXBData() {
+        List<String> publishers = publisherDTO.getAllPublisher();
+        cbPublisher.removeAllItems();
+        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nhà xuất bản" }));
+
+        for (String publisher : publishers) {
+            cbPublisher.addItem(publisher);
+        }
+    }
+
+    // Load danh sach book
+    private void loadBookData(String searchSql) {
+        List<BookDTO> books = bookDTO.getAllBooks(searchSql);
+        DefaultTableModel model = (DefaultTableModel) myTable1.getModel();
+        model.setRowCount(0);
+    
+        for (BookDTO book : books) {
+            model.addRow(new Object[]{
+                book.getISBN(),
+                book.getName(),
+                book.getEdition(),
+                book.getLocation(),
+                book.getQuantity()
+            });
+        }
+
+        // Lấy book đầu tiên để hiển thị chi tiết
+        if (!books.isEmpty()) {
+            BookDTO firstBook = books.get(0); // Lấy đối tượng BookDTO đầu tiên            
+            bookDetail.setBookDTO(firstBook);
+            bookDetail.setBook();
+        }
+    }
+
+    private void clickBook() {
+        // Thêm MouseListener để xử lý sự kiện click vào hàng
+        myTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = myTable1.rowAtPoint(evt.getPoint());
+                if (row >= 0) {
+                    // Lấy đối tượng BookDTO từ danh sách books
+                    List<BookDTO> books = bookDTO.getAllBooks("");
+                    if (row < books.size()) {
+                        BookDTO targetBook = books.get(row); // Lấy sách từ hàng được click
+                        bookDetail.setBookDTO(targetBook);
+                        bookDetail.setBook(); // Hiển thị chi tiết sách
+                    }
+                }
+            }
+        });
+    }
+
+    private void confirmDelete() {
+        // Hiển thị hộp thoại xác nhận
+        int response = JOptionPane.showConfirmDialog(null, 
+                "Bạn có muốn xóa sách này không?", 
+                "Xác nhận xóa", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.QUESTION_MESSAGE);
+
+        // Kiểm tra phản hồi từ người dùng
+        if (response == JOptionPane.YES_OPTION) {
+            deleteBook(); // Gọi phương thức xóa sách
+        }
+        // Nếu chọn NO, không làm gì cả
+    }
+
+    private void deleteBook() {
+        String bookISBN = bookDetail.getBookISBN();
+        boolean isDeleted = bookDTO.deleteBookByISBN(bookISBN);
+
+        // Thực hiện xóa sách ở đây
+        if (isDeleted) {
+            JOptionPane.showMessageDialog(null, "Sách đã được xóa.", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            loadBookData("");
+        } else {
+            JOptionPane.showMessageDialog(null, "Vui lòng kiểm tra lại số lượng sách trên kệ, số lượng ở kho và số lượng nhập vào.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private GUI.BookDetail bookDetail;

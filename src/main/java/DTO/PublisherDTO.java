@@ -4,11 +4,23 @@
  */
 package DTO;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import connection.ConnectDB;
+
 /**
  *
  * @author User
  */
 public class PublisherDTO {
+    ConnectDB connectDB;
+    private Connection connection;
+
     private int id;
     private String name;
 
@@ -18,6 +30,13 @@ public class PublisherDTO {
     }
 
     public PublisherDTO() {
+        try {
+            connectDB = new ConnectDB();
+            connectDB.connect(); // Thêm dòng này để kết nối tới cơ sở dữ liệu
+            connection = connectDB.getConnection(); // Lấy Connection từ ConnectDB
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getId() {
@@ -34,5 +53,22 @@ public class PublisherDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<String> getAllPublisher() {
+        List<String> publisher = new ArrayList<>();
+        String sql = "SELECT name FROM publisher WHERE isActive = 1";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                publisher.add(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return publisher;
     }
 }

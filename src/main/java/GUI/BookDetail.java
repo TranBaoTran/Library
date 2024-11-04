@@ -4,13 +4,14 @@
  */
 package GUI;
 
-import DTO.BookDTO;
-import MyDesign.MyLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
+
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+
+import DTO.BookDTO;
+import MyDesign.MyLabel;
 
 /**
  *
@@ -31,6 +32,10 @@ public class BookDetail extends javax.swing.JPanel {
     public void setBookDTO(BookDTO bookDTO){
         this.bookDTO = bookDTO;
     }
+
+    public String getBookISBN() {
+        return this.bookDTO.getISBN();
+    }
     
     public void showBook(){
         if (bookDTO == null){
@@ -42,6 +47,7 @@ public class BookDetail extends javax.swing.JPanel {
     
     public void setBook(){
         panelBorder1.setVisible(true);
+        System.out.println(bookDTO.getImg());
         jLabel1.setIcon(new ImageIcon(new javax.swing.ImageIcon(getClass().getResource(bookDTO.getImg())).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
         lbNameBook.setText(bookDTO.getName());
         setUpBook();
