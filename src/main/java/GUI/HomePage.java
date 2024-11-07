@@ -51,6 +51,9 @@ public class HomePage extends javax.swing.JFrame {
                     case 6:
                         setForm(new StatisticGUI());
                         break; 
+                    case 7:
+                        setForm(new ImportGUI());
+                        break;
 //                    default:
 //                        setForm(new BookGUI());
                 }
@@ -106,6 +109,11 @@ public class HomePage extends javax.swing.JFrame {
         myButton1.setColorClick(new java.awt.Color(153, 204, 255));
         myButton1.setColorOver(new java.awt.Color(102, 204, 255));
         myButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        myButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                myButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout PanelHeadLayout = new javax.swing.GroupLayout(PanelHead);
         PanelHead.setLayout(PanelHeadLayout);
@@ -181,6 +189,12 @@ public class HomePage extends javax.swing.JFrame {
             System.exit(0);
         }
     }//GEN-LAST:event_mainPanelKeyPressed
+
+    private void myButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myButton1ActionPerformed
+        // TODO add your handling code here:
+        AddBookDialog whid = new AddBookDialog(new javax.swing.JFrame(), true);
+        whid.setVisible(true);
+    }//GEN-LAST:event_myButton1ActionPerformed
 
     private int x;
     private int y;

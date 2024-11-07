@@ -10,6 +10,10 @@ package DTO;
  */
 public class CategoryDTO {
     private int id;
+
+    public CategoryDTO(String name) {
+        this.name = name;
+    }
     private String name;
 
     public CategoryDTO(int id, String name) {
