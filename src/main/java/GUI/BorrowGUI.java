@@ -53,6 +53,8 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         updateDescriptionEvent();
         scanButton2.addActionListener(evt -> addBorrowing());
         borrowDetailClick();
+        
+//        hfhf
     }
 
     /*==============================  XỬ LÝ EVENT  ==================================*/
