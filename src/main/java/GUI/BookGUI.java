@@ -4,55 +4,47 @@
  */
 package GUI;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import DTO.BookDTO;
 import java.util.Vector;
-
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.table.DefaultTableModel;
-
-import BUS.BookBUS;
-import DTO.AuthorDTO;
-import DTO.BookDTO;
-import DTO.CategoryDTO;
-import DTO.PublisherDTO;
 
 /**
  *
  * @author User
  */
 public class BookGUI extends javax.swing.JPanel {
-    private BookBUS bookBus;
-    private List<BookDTO> books;
-    private  BookDTO targetBook;
-    private Map<String, String> searchCondition;
 
     /**
      * Creates new form BookGUI
      */
     public BookGUI() {
-        try {
-            bookBus = new BookBUS();
-        } catch (ClassNotFoundException | SQLException | IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        loadBookData(null);
-        searchCondition = new HashMap<>();
-
-        loadAuthorData();
-        loadCategoryData();
-        loadNXBData();
+        BookDTO bookDTO = new BookDTO(
+            "0-7687-5671-5",                      // ISBN
+            "Magnus Bane Chronicle",              // Title
+            "/asset/img/ExampleBook.png",         // Image Path
+            "NXB Kim Dong",                       // Publisher
+            new Vector<String>() {{ 
+                add("Cassandra Clare"); 
+                add("Sarah Rees Brennan"); 
+            }},                                   // Authors (using Vector)
+            new Vector<String>() {{ 
+                add("Fantasy"); 
+                add("Series"); 
+            }},                  // Genres
+            "1st",                                // Edition
+            "L1-A1",                              // Shelf Location
+            500000,                               // Price
+            10,                                   // Available Copies
+            10                                    // Total Copies
+        );
+        bookDetail.setBookDTO(bookDTO);
+        bookDetail.setBook();
     }
 
     /**
@@ -97,16 +89,6 @@ public class BookGUI extends javax.swing.JPanel {
         txtFindByISBN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtFindByISBNActionPerformed(evt);
-            }
-        });
-
-        // Click button tìm kiếm
-        btFind.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFindByISBNActionPerformed(evt);
-                txtFindByNameActionPerformed(evt);
-                txtFindByISBN1ActionPerformed(evt);
-                cbAuthorCategoryPublisherActionPerformed(evt);
             }
         });
 
@@ -208,28 +190,33 @@ public class BookGUI extends javax.swing.JPanel {
         jLabel4.setText("Thể loại");
 
         cbAuthor.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
         cbAuthor.setBorder(null);
         cbAuthor.setOpaque(true);
         cbAuthor.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setText("Tác giả");
 
         cbCategory.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbCategory.setBorder(null);
         cbCategory.setOpaque(true);
         cbCategory.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
+        cbCategory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbCategoryActionPerformed(evt);
+            }
+        });
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel6.setText("NXB");
 
         cbPublisher.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbPublisher.setBorder(null);
         cbPublisher.setOpaque(true);
         cbPublisher.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nhà xuất bản" }));
 
         btFind.setText("Tìm kiếm");
 
@@ -252,10 +239,6 @@ public class BookGUI extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
-
-        // Khi click vào 1 sách bất kỳ
-        clickBook();
-
         jScrollPane2.setViewportView(myTable1);
         if (myTable1.getColumnModel().getColumnCount() > 0) {
             myTable1.getColumnModel().getColumn(0).setResizable(false);
@@ -365,13 +348,6 @@ public class BookGUI extends javax.swing.JPanel {
         editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
         editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
-        // Khi nhấn vào button xóa sách
-        editBookButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmDelete();
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -404,167 +380,26 @@ public class BookGUI extends javax.swing.JPanel {
 
     private void txtFindByISBNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByISBNActionPerformed
         String text = txtFindByISBN.getText().trim();
-        searchCondition.put("v.ISBN", text);
+        try {
+            
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            JOptionPane.showMessageDialog(null,e1.getMessage());
+        }
     }//GEN-LAST:event_txtFindByISBNActionPerformed
 
     private void txtFindByNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByNameActionPerformed
-        String text = txtFindByName.getText().trim();
-        searchCondition.put("b.name", text);
+        // TODO add your handling code here:
     }//GEN-LAST:event_txtFindByNameActionPerformed
 
     private void txtFindByISBN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindByISBN1ActionPerformed
-        String text = txtFindByISBN1.getText().trim();
-        searchCondition.put("v.edition", text);
+        // TODO add your handling code here:
     }//GEN-LAST:event_txtFindByISBN1ActionPerformed
 
-    private void cbAuthorCategoryPublisherActionPerformed(java.awt.event.ActionEvent evt) {
-        String authorSelectedText = cbAuthor.getSelectedItem().toString();
-        String categorySelectedText = cbCategory.getSelectedItem().toString();
-        String publisherSelectedText = cbPublisher.getSelectedItem().toString();
-    
-        // Thêm hoặc xóa các điều kiện tìm kiếm
-        updateSearchCondition("a.name", authorSelectedText, "Tác giả");
-        updateSearchCondition("c.name", categorySelectedText, "Thể loại");
-        updateSearchCondition("p.name", publisherSelectedText, "Nhà xuất bản");
-    
-        try {
-            loadBookData(searchCondition);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage());
-        }
-    }
+    private void cbCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCategoryActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbCategoryActionPerformed
 
-    private void updateSearchCondition(String key, String selectedText, String defaultText) {
-        if (!selectedText.equals(defaultText)) {
-            searchCondition.put(key, selectedText);
-        } else {
-            searchCondition.remove(key);
-        }
-    }
-
-    // Load danh sách tác giả
-    private void loadAuthorData() {
-        try {
-            Vector<AuthorDTO> authors = bookBus.getAllAuthor();
-            cbAuthor.removeAllItems();
-            cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Tác giả"}));
-            for (AuthorDTO author : authors) {
-                cbAuthor.addItem(author.getName());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading authors: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // Load danh sach category
-    private void loadCategoryData() {
-        try {
-            Vector<CategoryDTO> categories = bookBus.getAllCategory();
-            cbCategory.removeAllItems();
-            cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
-            for (CategoryDTO category : categories) {
-                cbCategory.addItem(category.getName());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading authors: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // Load danh sach nhà xuất bản
-    private void loadNXBData() {
-        try { 
-            Vector<PublisherDTO> publishers = bookBus.getAllPublisher();
-            cbPublisher.removeAllItems();
-            cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nhà xuất bản" }));
-
-            for (PublisherDTO publisher : publishers) {
-                cbPublisher.addItem(publisher.getName());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading authors: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // Load danh sach book
-    private void loadBookData(Map<String, String> conditions) {
-        try {
-            books = bookBus.getAllBookByCondition(conditions);
-            DefaultTableModel model = (DefaultTableModel) myTable1.getModel();
-            model.setRowCount(0);
-        
-            for (BookDTO book : books) {
-                model.addRow(new Object[]{
-                    book.getISBN(),
-                    book.getName(),
-                    book.getEdition(),
-                    book.getLocation(),
-                    book.getQuantity()
-                });
-            }
-
-            // Lấy book đầu tiên để hiển thị chi tiết
-            if (!books.isEmpty()) {
-                targetBook = books.get(0); // Lấy đối tượng BookDTO đầu tiên          
-                bookDetail.setBookDTO(targetBook);
-                bookDetail.setBook();
-            } else {
-                bookDetail.setBookDTO(null);
-                bookDetail.showBook();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading authors: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void clickBook() {
-        myTable1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = myTable1.rowAtPoint(evt.getPoint());
-                if (row >= 0 && row < books.size()) {
-                    targetBook = books.get(row); // Lấy sách từ hàng được click
-                    bookDetail.setBookDTO(targetBook);
-                    bookDetail.setBook(); // Hiển thị chi tiết sách
-                }
-            }
-        });    
-    }
-
-    private void confirmDelete() {
-        // Hiển thị hộp thoại xác nhận
-        int response = JOptionPane.showConfirmDialog(null, 
-                "Bạn có muốn xóa sách này không?", 
-                "Xác nhận xóa", 
-                JOptionPane.YES_NO_OPTION, 
-                JOptionPane.QUESTION_MESSAGE);
-
-        // Kiểm tra phản hồi từ người dùng
-        if (response == JOptionPane.YES_OPTION) {
-            deleteBook(); // Gọi phương thức xóa sách
-        }
-        // Nếu chọn NO, không làm gì cả
-    }
-
-    private void deleteBook() {
-        String bookISBN = targetBook.getISBN();
-        try {
-            boolean isDeleted = bookBus.deleteBookByISBN(bookISBN);
-
-            // Thực hiện xóa sách ở đây
-            if (isDeleted) {
-                JOptionPane.showMessageDialog(null, "This Book has been deleted.", "Notification", JOptionPane.INFORMATION_MESSAGE);
-                loadBookData(searchCondition);
-            } else {
-                JOptionPane.showMessageDialog(null, "Please check the quantity of books on the shelves, the quantity in the warehouse and the quantity imported.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Delete this book error: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private GUI.BookDetail bookDetail;
