@@ -4,6 +4,17 @@
  */
 package DAO;
 
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.BookNameDTO;
@@ -13,12 +24,6 @@ import DTO.ImportDTO;
 import DTO.PublisherDTO;
 import DTO.SupplierDTO;
 import connection.ConnectDB;
-import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Vector;
 
 /**
  *
@@ -629,5 +634,162 @@ public class BookDAO {
         return flag;
     }
 
-   
+    public List<BookDTO> getAllBookByCondition(Map<String, String> searchConditions) throws SQLException {
+        connectDB.connect();
+        List<BookDTO> books = new ArrayList<>();
+        String sql = generateGetAllBookSQL();
+    
+        // Tạo điều kiện tìm kiếm
+        StringBuilder conditionBuilder = new StringBuilder();
+        if (searchConditions != null && !searchConditions.isEmpty()) {
+            for (Map.Entry<String, String> entry : searchConditions.entrySet()) {
+                if (conditionBuilder.length() > 0) {
+                    conditionBuilder.append(" AND ");
+                }
+                // Sử dụng LIKE cho điều kiện
+                conditionBuilder.append(entry.getKey()).append(" LIKE ?");
+            }
+        }
+    
+        // Nếu có điều kiện thì thêm vào câu SQL
+        if (conditionBuilder.length() > 0) {
+            sql += " AND " + conditionBuilder.toString();
+        }
+
+        System.out.println(sql);
+        System.out.println(searchConditions);
+
+        if (ConnectDB.conn != null) {
+            try (PreparedStatement pstmt = ConnectDB.conn.prepareStatement(sql)) {
+                // Thiết lập giá trị cho PreparedStatement
+                int index = 1;
+                if (searchConditions != null) {
+                    for (Map.Entry<String, String> entry : searchConditions.entrySet()) {
+                        pstmt.setString(index++, "%" + entry.getValue() + "%");
+                    }
+                }
+        
+                ResultSet rs = pstmt.executeQuery();
+                Map<String, BookDTO> bookMap = new HashMap<>();
+        
+                while (rs.next()) {
+                    String isbn = rs.getString("ISBN");
+                    BookDTO book = bookMap.get(isbn);
+        
+                    if (book == null) {
+                        book = new BookDTO(
+                                isbn,
+                                rs.getString("BookName"),
+                                rs.getString("img"),
+                                rs.getString("PublisherName"),
+                                new Vector<>(), // Placeholder cho authors
+                                new Vector<>(), // Placeholder cho categories
+                                rs.getString("edition"),
+                                rs.getString("location"),
+                                rs.getLong("price"),
+                                rs.getInt("quantity"),
+                                rs.getInt("available")
+                        );
+                        bookMap.put(isbn, book);
+                    }
+        
+                    String authorName = rs.getString("AuthorName");
+                    if (authorName != null && !book.getAuthors().contains(authorName)) {
+                        book.getAuthors().add(authorName);
+                    }
+        
+                    String categoryName = rs.getString("CategoryName");
+                    if (categoryName != null && !book.getCategories().contains(categoryName)) {
+                        book.getCategories().add(categoryName);
+                    }
+                }
+        
+                books.addAll(bookMap.values());
+            }
+        }
+    
+        return books;
+    }
+
+    private String generateGetAllBookSQL() {
+        return "SELECT "
+                + "b.id AS BookID, "
+                + "b.name AS BookName, "
+                + "b.isActive AS BookIsActive, "
+                + "v.ISBN, "
+                + "v.img, "
+                + "v.publisherID, "
+                + "p.name AS PublisherName, "
+                + "v.edition, "
+                + "v.location, "
+                + "v.price, "
+                + "v.quantity, "
+                + "v.available, "
+                + "ba.authorID AS AuthorID, "
+                + "a.name AS AuthorName, "
+                + "bc.categoryID AS CategoryID, "
+                + "c.name AS CategoryName "
+                + "FROM book b "
+                + "LEFT JOIN versionofbook v ON b.id = v.bookID "
+                + "LEFT JOIN publisher p ON v.publisherID = p.id "
+                + "LEFT JOIN bookauthor ba ON b.id = ba.bookID "
+                + "LEFT JOIN author a ON ba.authorID = a.id "
+                + "LEFT JOIN bookcategory bc ON b.id = bc.bookID "
+                + "LEFT JOIN category c ON bc.categoryID = c.id "
+                + "WHERE "
+                + "b.isActive = 1 AND "
+                + "p.isActive = 1 AND "
+                + "c.isActive = 1 AND "
+                + "a.isActive = 1";
+    }
+
+    public boolean deleteBookByISBN(String isbn) throws SQLException {
+        connectDB.connect();
+        String checkSql = "SELECT v.available, v.quantity, COALESCE(i.quantity, 0) AS importQuantity " +
+                          "FROM versionofbook v " +
+                          "LEFT JOIN importdetail i ON v.ISBN = i.ISBN " +
+                          "WHERE v.ISBN = ?";
+        
+        String deleteSql = "DELETE FROM versionofbook WHERE ISBN = ?";
+        
+        boolean isDeleted = false; // Biến để theo dõi trạng thái xóa
+        if (ConnectDB.conn != null) {
+            try {
+                // Bắt đầu giao dịch
+                ConnectDB.conn.setAutoCommit(false); // Tắt chế độ tự động commit
+                
+                PreparedStatement checkStmt = ConnectDB.conn.prepareStatement(checkSql);
+                checkStmt.setString(1, isbn);
+                ResultSet rs = checkStmt.executeQuery();
+    
+                if (rs.next()) {
+                    int available = rs.getInt("available");
+                    int quantity = rs.getInt("quantity");
+                    int importQuantity = rs.getInt("importQuantity");
+    
+                    // Kiểm tra điều kiện xóa
+                    if (available == 0 && quantity == 0 && importQuantity == 0) {
+                        // Thực hiện xóa
+                        PreparedStatement deleteStmt = ConnectDB.conn.prepareStatement(deleteSql);
+                        deleteStmt.setString(1, isbn);
+                        int rowsAffected = deleteStmt.executeUpdate();
+                        ConnectDB.conn.commit(); // Commit giao dịch
+                        isDeleted = (rowsAffected > 0); // Xóa thành công nếu có ít nhất 1 hàng bị xóa
+                    } else {
+                        System.out.println("Cannot delete book: Condition not met. Book: available != 0 or quantity != 0 or importQuantity != 0");
+                    }
+                }
+            } catch (SQLException e) {
+                try {
+                    ConnectDB.conn.rollback(); // Rollback nếu có lỗi
+                } catch (SQLException rollbackException) {
+                    rollbackException.printStackTrace();
+                }
+                e.printStackTrace();
+            } finally {
+                connectDB.disconnect(); // Đảm bảo kết nối được đóng
+            }
+        }
+        return isDeleted; // Trả về trạng thái xóa
+    }    
 }
