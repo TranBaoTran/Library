@@ -191,7 +191,7 @@
                       <Renderer/>
                     </Column>
                     <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                      <Title value="N&#x103;m sinh"/>
+                      <Title/>
                       <Editor/>
                       <Renderer/>
                     </Column>

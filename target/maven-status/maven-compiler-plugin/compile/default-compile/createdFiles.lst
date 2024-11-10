@@ -49,6 +49,7 @@ GUI\BookGUI$4.class
 GUI\ReaderGUI.class
 GUI\BorrowGUI$1.class
 GUI\AddBook$1.class
+DAO\OtherDAO.class
 GUI\AddCateDialog.class
 GUI\ReaderGUI$3.class
 MyDesign\PanelBorder.class
@@ -114,6 +115,7 @@ GUI\StaffGUI$4.class
 GUI\AddAuthorsDialog$2.class
 GUI\AddBook$11.class
 GUI\ChooseAuthorDialog.class
+BUS\OtherBUS.class
 GUI\BorrowGUI$10.class
 DTO\BorrowDetailDTO.class
 GUI\AddBookDialog$3.class

@@ -3,6 +3,7 @@ D:\Library\src\main\java\BUS\BookBUS.java
 D:\Library\src\main\java\BUS\BorrowBUS.java
 D:\Library\src\main\java\BUS\BorrowDetailBUS.java
 D:\Library\src\main\java\BUS\ImportBUS.java
+D:\Library\src\main\java\BUS\OtherBUS.java
 D:\Library\src\main\java\BUS\PersonBUS.java
 D:\Library\src\main\java\com\mycompany\library\Library.java
 D:\Library\src\main\java\connection\ConnectDB.java
@@ -12,6 +13,7 @@ D:\Library\src\main\java\DAO\BorrowDAO.java
 D:\Library\src\main\java\DAO\BorrowDetailDAO.java
 D:\Library\src\main\java\DAO\DAO_Interface.java
 D:\Library\src\main\java\DAO\ImportDAO.java
+D:\Library\src\main\java\DAO\OtherDAO.java
 D:\Library\src\main\java\DAO\PersonDAO.java
 D:\Library\src\main\java\DTO\AccountDTO.java
 D:\Library\src\main\java\DTO\AuthorDTO.java

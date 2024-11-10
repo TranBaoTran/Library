@@ -4,19 +4,123 @@
  */
 package GUI;
 
+import BUS.OtherBUS;
+import DTO.AuthorDTO;
+import DTO.CategoryDTO;
+import DTO.PublisherDTO;
+import DTO.SupplierDTO;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+
 /**
  *
  * @author User
  */
 public class OtherGUI extends javax.swing.JPanel {
-
     /**
      * Creates new form OtherGUI
      */
     public OtherGUI() {
         initComponents();
+        render();
     }
+    
+    public void render(){
+        OtherBUS otherBUS = new OtherBUS();
+        displayAuthorTable(otherBUS.loadAuthorData());
+        styleTable(authorsTable);
 
+        displayCategoryTable(otherBUS.loadCategoryData());
+        styleTable(categoryTable);
+        
+        displayPublisherTable(otherBUS.loadPublisherData());
+        styleTable(publishersTable);
+        
+        displaySupplierTable(otherBUS.loadSupplierData());
+        styleTable(suppliersTable);
+    }
+    
+    public void styleTable(JTable table){
+        // Căn giữa nội dung các ô trong bảng
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        table.setDefaultRenderer(Object.class, centerRenderer);
+
+        // Căn giữa tiêu đề cột
+        JTableHeader header = table.getTableHeader();
+        DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) header.getDefaultRenderer();
+        headerRenderer.setHorizontalAlignment(SwingConstants.CENTER);  // Căn giữa tiêu đề cột
+        header.setFont(new Font("Arial", Font.BOLD, 14));  // In đậm tiêu đề cột
+        header.setForeground(Color.BLUE);  // Màu chữ cho tiêu đề cột
+    }
+    
+    public void displayAuthorTable(List<AuthorDTO> authors){
+        String[] columnNames = {"ID", "Tên", "Năm Sinh"};
+        
+        // Tạo dữ liệu cho bảng từ List<Author>
+        Object[][] data = new Object[authors.size()][3];
+        for (int i = 0; i < authors.size(); i++) {
+            data[i][0] = authors.get(i).getId();
+            data[i][1] = authors.get(i).getName();
+            data[i][2] = authors.get(i).getYear();
+        }
+
+        // Tạo DefaultTableModel với dữ liệu và tên cột
+        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        authorsTable.setModel(model);
+    }
+    
+    public void displayCategoryTable(List<CategoryDTO> categories){
+        String[] columnNames = {"ID", "Tên"};
+        
+        // Tạo dữ liệu cho bảng từ List<Author>
+        Object[][] data = new Object[categories.size()][2];
+        for (int i = 0; i < categories.size(); i++) {
+            data[i][0] = categories.get(i).getId();
+            data[i][1] = categories.get(i).getName();
+        }
+
+        // Tạo DefaultTableModel với dữ liệu và tên cột
+        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        categoryTable.setModel(model);
+    }
+    
+    public void displayPublisherTable(List<PublisherDTO> publishers){
+        String[] columnNames = {"ID", "Tên"};
+        
+        // Tạo dữ liệu cho bảng từ List<Author>
+        Object[][] data = new Object[publishers.size()][2];
+        for (int i = 0; i < publishers.size(); i++) {
+            data[i][0] = publishers.get(i).getId();
+            data[i][1] = publishers.get(i).getName();
+        }
+
+        // Tạo DefaultTableModel với dữ liệu và tên cột
+        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        publishersTable.setModel(model);
+    }
+    
+    public void displaySupplierTable(List<SupplierDTO> suppliers){
+        String[] columnNames = {"ID", "Tên"};
+        
+        // Tạo dữ liệu cho bảng từ List<Author>
+        Object[][] data = new Object[suppliers.size()][2];
+        for (int i = 0; i < suppliers.size(); i++) {
+            data[i][0] = suppliers.get(i).getId();
+            data[i][1] = suppliers.get(i).getName();
+        }
+
+        // Tạo DefaultTableModel với dữ liệu và tên cột
+        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        suppliersTable.setModel(model);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -65,9 +169,6 @@ public class OtherGUI extends javax.swing.JPanel {
             }
         ));
         jScrollPane1.setViewportView(authorsTable);
-        if (authorsTable.getColumnModel().getColumnCount() > 0) {
-            authorsTable.getColumnModel().getColumn(2).setHeaderValue("Năm sinh");
-        }
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("Thể loại");
