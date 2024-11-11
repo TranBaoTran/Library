@@ -470,8 +470,12 @@ public class OtherGUI extends javax.swing.JPanel {
     private void delAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delAuthorButtonActionPerformed
         // TODO add your handling code here:
         OtherBUS otherBUS = new OtherBUS();
-        JOptionPane.showMessageDialog(null, otherBUS.deleteAuthor(this.author));
-        render();
+        if(authorsTable.getSelectedRow() != -1){
+            JOptionPane.showMessageDialog(null, otherBUS.deleteAuthor(this.author));
+            render();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn tác giả muốn xóa");
+        }
     }//GEN-LAST:event_delAuthorButtonActionPerformed
 
     private void categoryTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_categoryTableMouseClicked
@@ -494,8 +498,12 @@ public class OtherGUI extends javax.swing.JPanel {
     private void delCateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delCateButtonActionPerformed
         // TODO add your handling code here:
         OtherBUS otherBUS = new OtherBUS();
-        JOptionPane.showMessageDialog(null, otherBUS.deleteCategory(this.category));
-        render();
+        if(categoryTable.getSelectedRow() != -1){
+            JOptionPane.showMessageDialog(null, otherBUS.deleteCategory(this.category));
+            render();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn thể loại muốn xóa");
+        }
     }//GEN-LAST:event_delCateButtonActionPerformed
 
     private void publishersTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_publishersTableMouseClicked
@@ -535,15 +543,25 @@ public class OtherGUI extends javax.swing.JPanel {
     private void delPublisherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delPublisherButtonActionPerformed
         // TODO add your handling code here:
         OtherBUS otherBUS = new OtherBUS();
-        JOptionPane.showMessageDialog(null, otherBUS.deletePublisher(this.publisher));
-        render();
+        if(publishersTable.getSelectedRow() != -1){
+            JOptionPane.showMessageDialog(null, otherBUS.deletePublisher(this.publisher));
+            render();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn nhà xuất bản muốn xóa");
+        }
+        
     }//GEN-LAST:event_delPublisherButtonActionPerformed
 
     private void delSupplierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delSupplierButtonActionPerformed
         // TODO add your handling code here:
         OtherBUS otherBUS = new OtherBUS();
-        JOptionPane.showMessageDialog(null, otherBUS.deleteSupplier(this.supplier));
-        render();
+        if(suppliersTable.getSelectedRow() != 1){
+            JOptionPane.showMessageDialog(null, otherBUS.deleteSupplier(this.supplier));
+            render();
+        }else{
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn nhà cung cấp");
+        }
+        
     }//GEN-LAST:event_delSupplierButtonActionPerformed
 
 
