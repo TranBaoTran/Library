@@ -38,6 +38,21 @@ public class OtherBUS {
         return result? "Thêm tác giả thành công": "Thêm tác giả thất bại";
     }
     
+    public String addCategory(CategoryDTO category){
+        boolean result = otherDAO.addCategory(category);
+        return result? "Thêm thể loại thành công": "Thêm thể loại thất bại";
+    }
+    
+    public String addPublisher(PublisherDTO publisher){
+        boolean result = otherDAO.addPublisher(publisher);
+        return result? "Thêm nhà xuất bản thành công": "Thêm nhà xuất bản thất bại";
+    }
+    
+    public String addSupplier(SupplierDTO supplier){
+        boolean result = otherDAO.addSupplier(supplier);
+        return result? "Thêm nhà cung cấp thành công": "Thêm nhà cung cấp thất bại";
+    }
+    
     public AuthorDTO getAuthorById(int authorId){
         return otherDAO.getAuthorById(authorId);
     }

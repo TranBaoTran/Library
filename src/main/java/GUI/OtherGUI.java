@@ -87,7 +87,6 @@ public class OtherGUI extends javax.swing.JPanel {
     public void displayCategoryTable(List<CategoryDTO> categories){
         String[] columnNames = {"ID", "Tên"};
         
-        // Tạo dữ liệu cho bảng từ List<Author>
         Object[][] data = new Object[categories.size()][2];
         for (int i = 0; i < categories.size(); i++) {
             data[i][0] = categories.get(i).getId();
@@ -127,27 +126,6 @@ public class OtherGUI extends javax.swing.JPanel {
         // Tạo DefaultTableModel với dữ liệu và tên cột
         DefaultTableModel model = new DefaultTableModel(data, columnNames);
         suppliersTable.setModel(model);
-    }
-    
-    public void addAuthor(AddAuthorsDialog whid){
-        OtherBUS otherBUS = new OtherBUS();
-        String name = whid.getAuthorName();
-        int year = whid.getBirthYear();
-        if (name == null || name.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Tên tác giả không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (year <= 0) {
-            JOptionPane.showMessageDialog(null, "Năm sinh không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        AuthorDTO author = new AuthorDTO(name, year);
-        String result = otherBUS.addAuthor(author);
-        JOptionPane.showMessageDialog(null, result, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-        SwingUtilities.invokeLater(() -> {
-            whid.dispose();  // Đảm bảo dispose() được gọi trong luồng sự kiện UI
-        });
-        render();
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -427,26 +405,26 @@ public class OtherGUI extends javax.swing.JPanel {
 
     private void addAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAuthorButtonActionPerformed
         // TODO add your handling code here:
-        AddAuthorsDialog whid = new AddAuthorsDialog(new javax.swing.JFrame(), true);
+        AddAuthorsDialog whid = new AddAuthorsDialog(new javax.swing.JFrame(), true, this);
         whid.setVisible(true);
-        addAuthor(whid);
+        
     }//GEN-LAST:event_addAuthorButtonActionPerformed
 
     private void addCateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCateButtonActionPerformed
         // TODO add your handling code here:
-        AddCateDialog whid = new AddCateDialog(new javax.swing.JFrame(), true);
+        AddCateDialog whid = new AddCateDialog(new javax.swing.JFrame(), true, this);
         whid.setVisible(true);
     }//GEN-LAST:event_addCateButtonActionPerformed
 
     private void addPublisherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPublisherButtonActionPerformed
         // TODO add your handling code here:
-        AddPublisherDialog whid = new AddPublisherDialog(new javax.swing.JFrame(), true);
+        AddPublisherDialog whid = new AddPublisherDialog(new javax.swing.JFrame(), true, this);
         whid.setVisible(true);
     }//GEN-LAST:event_addPublisherButtonActionPerformed
 
     private void addSupplierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSupplierButtonActionPerformed
         // TODO add your handling code here:
-        AddSupplierDialog whid = new AddSupplierDialog(new javax.swing.JFrame(), true);
+        AddSupplierDialog whid = new AddSupplierDialog(new javax.swing.JFrame(), true, this);
         whid.setVisible(true);
     }//GEN-LAST:event_addSupplierButtonActionPerformed
 
@@ -534,7 +512,7 @@ public class OtherGUI extends javax.swing.JPanel {
 //            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
             OtherBUS otherBUS = new OtherBUS();
             this.supplier = otherBUS.getSupplierById(id);
-            JOptionPane.showMessageDialog(null, "supplier: " + this.supplier.getId() + ", " + this.supplier.getName());
+            JOptionPane.showMessageDialog(null, "supplier: " + this.supplier.getId() + ", " + this.supplier.getName()+ ", " + this.supplier.getAddress()+ ", " + this.supplier.getTel());
         } else {
             JOptionPane.showMessageDialog(null, "No row selected!");
         }

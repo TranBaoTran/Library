@@ -4,12 +4,17 @@
  */
 package GUI;
 
+import BUS.OtherBUS;
+import DTO.CategoryDTO;
+import DTO.PublisherDTO;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author User
  */
 public class AddPublisherDialog extends javax.swing.JDialog {
-
+    private OtherGUI otherGUI;
     /**
      * Creates new form AddPublisherDialog
      */
@@ -18,7 +23,24 @@ public class AddPublisherDialog extends javax.swing.JDialog {
         initComponents();
         setLocationRelativeTo(null);
     }
+    
+    public AddPublisherDialog(java.awt.Frame parent, boolean modal, OtherGUI otherGUI
+    ) {
+        super(parent, modal);
+        initComponents();
+        setLocationRelativeTo(null);
+        this.otherGUI = otherGUI;
+    }
 
+    public boolean checkValidate(){
+        boolean result = true;
+        if (this.publisherNameTextField.getText().equals("")){
+            JOptionPane.showMessageDialog(null, "Tên nhà xuất bản không được bỏ trống");
+            result = false;
+        }
+        return result;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -124,6 +146,14 @@ public class AddPublisherDialog extends javax.swing.JDialog {
 
     private void addPublisherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPublisherButtonActionPerformed
         // TODO add your handling code here:
+        if(checkValidate()){
+            OtherBUS otherBUS = new OtherBUS();
+            String name = this.publisherNameTextField.getText();
+            PublisherDTO publisher = new PublisherDTO(name);
+            JOptionPane.showMessageDialog(null, otherBUS.addPublisher(publisher));
+            publisherNameTextField.setText("");
+            otherGUI.render();
+        }
     }//GEN-LAST:event_addPublisherButtonActionPerformed
 
     /**

@@ -4,12 +4,17 @@
  */
 package GUI;
 
+import BUS.OtherBUS;
+import DTO.PublisherDTO;
+import DTO.SupplierDTO;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author User
  */
 public class AddSupplierDialog extends javax.swing.JDialog {
-
+    private OtherGUI otherGUI;
     /**
      * Creates new form AddSupplierDialog
      */
@@ -18,7 +23,23 @@ public class AddSupplierDialog extends javax.swing.JDialog {
         initComponents();
         setLocationRelativeTo(null);
     }
+    
+    public AddSupplierDialog(java.awt.Frame parent, boolean modal, OtherGUI otherGUI) {
+        super(parent, modal);
+        initComponents();
+        setLocationRelativeTo(null);
+        this.otherGUI = otherGUI;
+    }
 
+    public boolean checkValidate(){
+        boolean result = true;
+        if (this.supplierNameTextField.getText().equals("")){
+            JOptionPane.showMessageDialog(null, "Tên nhà cung cấp không được bỏ trống");
+            result = false;
+        }
+        return result;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -124,6 +145,14 @@ public class AddSupplierDialog extends javax.swing.JDialog {
 
     private void addSupplierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSupplierButtonActionPerformed
         // TODO add your handling code here:
+        if(checkValidate()){
+            OtherBUS otherBUS = new OtherBUS();
+            String name = this.supplierNameTextField.getText();
+            SupplierDTO supplier = new SupplierDTO(name, "Địa chỉ", "SĐT");
+            JOptionPane.showMessageDialog(null, otherBUS.addSupplier(supplier));
+            supplierNameTextField.setText("");
+            otherGUI.render();
+        }
     }//GEN-LAST:event_addSupplierButtonActionPerformed
 
     /**
