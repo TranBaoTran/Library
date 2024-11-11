@@ -19,6 +19,14 @@ public class AddAuthorsDialog extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }
 
+    public String getAuthorName() {
+        return authorNameTextField.getText();
+    }
+
+    public int getBirthYear() {
+        return Integer.parseInt(birthYearTextField.getText());
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

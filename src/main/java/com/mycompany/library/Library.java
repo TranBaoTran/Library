@@ -4,6 +4,8 @@
 
 package com.mycompany.library;
 
+import GUI.HomePage;
+
 /**
  *
  * @author User
@@ -11,6 +13,7 @@ package com.mycompany.library;
 public class Library {
 
     public static void main(String[] args) {
-        
+        HomePage homePage = new HomePage();
+        homePage.setVisible(true);
     }
 }
