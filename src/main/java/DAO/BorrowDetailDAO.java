@@ -74,6 +74,23 @@ public class BorrowDetailDAO {
     }
 
 
+    //cập nhật mô tả trong 1 detail
+    public boolean updateLostAndBroke(int borrowID, String ISBN, int lost, int broke) {
+        String query = "UPDATE `borrowdetail` SET `lost`= ?, `broke`= ? WHERE ISBN = ? AND borrowID = ?";
+        try (PreparedStatement stmt = connectDB.getConnection().prepareStatement(query)) {
+            stmt.setInt(1, lost);
+            stmt.setInt(2, broke);
+            stmt.setString(3, ISBN);
+            stmt.setInt(4, borrowID);
+
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public List<BorrowDetailDTO> selectAll(int borrowID) {
         List<BorrowDetailDTO> listBorrowDetail = new ArrayList<>();
         PreparedStatement ps = null;

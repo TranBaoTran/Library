@@ -46,6 +46,11 @@ public class BorrowDetailBUS {
         return detailDAO.updateDesciption(borrowID, ISBN, description);
     }
 
+    //Gọi DAO để cập nhật số lượng mất và hỏng
+    public boolean updateLostAndBroke(int borrowID, String ISBN, int lost, int broke) {
+        return detailDAO.updateLostAndBroke(borrowID, ISBN, lost, broke);
+    }
+
     // Lớp BUS
     public List<BorrowDetailDTO> loadBorrowDetailData(int borrowID) {
         List<BorrowDetailDTO> borrowDetailList = detailDAO.selectAll(borrowID);
