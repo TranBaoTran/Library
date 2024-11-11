@@ -4,38 +4,10 @@
  */
 package BUS;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.List;
-
-import DAO.AccountDAO;
-import DTO.AccountDTO;
-
 /**
  *
  * @author User
  */
 public class AccountBUS {
-    protected static AccountDAO accountDAO;
-
-    public AccountBUS() throws ClassNotFoundException, SQLException, IOException {
-        accountDAO = new AccountDAO();
-    }
-
-    public List<AccountDTO> getFullAccount() throws SQLException {
-        return accountDAO.getFullAccount();
-    }
-
-    public boolean updateAccountStatus(String accountId, boolean isActive) throws SQLException {
-        return accountDAO.updateAccountStatus(accountId, isActive);
-    }
-
-    public List<AccountDTO> getAccountBySearchCondition(String accountId,LocalDate startDate,LocalDate endDate,Boolean isActive, String selectedRole) throws SQLException {
-        return accountDAO.getAccountBySearchCondition(accountId, startDate, endDate, isActive, selectedRole);
-    }
-
-    public boolean changePassword(String accountId, String newPassword) throws SQLException {
-        return accountDAO.changePassword(accountId, newPassword);
-    }
+    
 }
