@@ -49,6 +49,7 @@ GUI\BookGUI$4.class
 GUI\ReaderGUI.class
 GUI\BorrowGUI$1.class
 GUI\AddBook$1.class
+GUI\OtherGUI$9.class
 DAO\OtherDAO.class
 GUI\AddCateDialog.class
 GUI\ReaderGUI$3.class
@@ -61,6 +62,8 @@ DTO\FullBookDTO.class
 GUI\BorrowReceipt.class
 GUI\ReaderGUI$6.class
 GUI\AddPublisherDialog$2.class
+GUI\OtherGUI$5.class
+GUI\OtherGUI$8.class
 GUI\BorrowGUI$5.class
 GUI\ReaderDetail$1.class
 GUI\AddSupplierDialog$1.class
@@ -73,9 +76,11 @@ GUI\AddBook$6.class
 DTO\CategoryDTO.class
 DTO\PersonDTO.class
 GUI\BookGUI$6.class
+GUI\OtherGUI$11.class
 GUI\ReaderHistoryDialog.class
 GUI\HomePage$4.class
 GUI\AddBook$10.class
+GUI\OtherGUI$6.class
 GUI\ReaderHistoryDialog$2.class
 GUI\AddBook$5.class
 GUI\StaffGUI.class
@@ -84,6 +89,7 @@ GUI\HomePage$3.class
 MyDesign\PanelBorder_Basic.class
 GUI\BookDetail.class
 MyDesign\MyLabel.class
+GUI\OtherGUI$12.class
 GUI\ChooseSupplierDialog$2.class
 GUI\ReaderGUI$4.class
 GUI\AddBookDialog$9$1.class
@@ -107,9 +113,11 @@ GUI\OtherGUI$1.class
 GUI\Scanner_Dialog.class
 MyDesign\PanelBorder_Statistic_Blue.class
 GUI\AccountGUI$3.class
+GUI\OtherGUI$10.class
 GUI\AddSupplierDialog.class
 GUI\AddAuthorsDialog$3$1.class
 GUI\ReaderGUI$2.class
+GUI\OtherGUI$7.class
 GUI\ChooseSupplierDialog$4.class
 GUI\StaffGUI$4.class
 GUI\AddAuthorsDialog$2.class

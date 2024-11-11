@@ -12,11 +12,14 @@ import DTO.SupplierDTO;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -26,6 +29,11 @@ public class OtherGUI extends javax.swing.JPanel {
     /**
      * Creates new form OtherGUI
      */
+    private AuthorDTO author;
+    private CategoryDTO category;
+    private PublisherDTO publisher;
+    private SupplierDTO supplier;
+    
     public OtherGUI() {
         initComponents();
         render();
@@ -121,6 +129,26 @@ public class OtherGUI extends javax.swing.JPanel {
         suppliersTable.setModel(model);
     }
     
+    public void addAuthor(AddAuthorsDialog whid){
+        OtherBUS otherBUS = new OtherBUS();
+        String name = whid.getAuthorName();
+        int year = whid.getBirthYear();
+        if (name == null || name.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Tên tác giả không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (year <= 0) {
+            JOptionPane.showMessageDialog(null, "Năm sinh không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        AuthorDTO author = new AuthorDTO(name, year);
+        String result = otherBUS.addAuthor(author);
+        JOptionPane.showMessageDialog(null, result, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        SwingUtilities.invokeLater(() -> {
+            whid.dispose();  // Đảm bảo dispose() được gọi trong luồng sự kiện UI
+        });
+        render();
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -168,6 +196,11 @@ public class OtherGUI extends javax.swing.JPanel {
                 "Mã", "Tên tác giả", "Năm sinh"
             }
         ));
+        authorsTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                authorsTableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(authorsTable);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -184,6 +217,11 @@ public class OtherGUI extends javax.swing.JPanel {
                 "Mã", "Tên thể loại"
             }
         ));
+        categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                categoryTableMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(categoryTable);
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -200,6 +238,11 @@ public class OtherGUI extends javax.swing.JPanel {
                 "Mã", "Tên nhà xuất bản"
             }
         ));
+        publishersTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                publishersTableMouseClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(publishersTable);
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -216,6 +259,11 @@ public class OtherGUI extends javax.swing.JPanel {
                 "Mã", "Tên nhà cung cấp"
             }
         ));
+        suppliersTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                suppliersTableMouseClicked(evt);
+            }
+        });
         jScrollPane4.setViewportView(suppliersTable);
 
         addAuthorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
@@ -226,6 +274,11 @@ public class OtherGUI extends javax.swing.JPanel {
         });
 
         delAuthorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/tru.png"))); // NOI18N
+        delAuthorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                delAuthorButtonActionPerformed(evt);
+            }
+        });
 
         addPublisherButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
         addPublisherButton.addActionListener(new java.awt.event.ActionListener() {
@@ -235,6 +288,11 @@ public class OtherGUI extends javax.swing.JPanel {
         });
 
         delPublisherButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/tru.png"))); // NOI18N
+        delPublisherButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                delPublisherButtonActionPerformed(evt);
+            }
+        });
 
         addCateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
         addCateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -244,6 +302,11 @@ public class OtherGUI extends javax.swing.JPanel {
         });
 
         delCateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/tru.png"))); // NOI18N
+        delCateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                delCateButtonActionPerformed(evt);
+            }
+        });
 
         addSupplierButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
         addSupplierButton.addActionListener(new java.awt.event.ActionListener() {
@@ -253,6 +316,11 @@ public class OtherGUI extends javax.swing.JPanel {
         });
 
         delSupplierButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/tru.png"))); // NOI18N
+        delSupplierButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                delSupplierButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
@@ -361,6 +429,7 @@ public class OtherGUI extends javax.swing.JPanel {
         // TODO add your handling code here:
         AddAuthorsDialog whid = new AddAuthorsDialog(new javax.swing.JFrame(), true);
         whid.setVisible(true);
+        addAuthor(whid);
     }//GEN-LAST:event_addAuthorButtonActionPerformed
 
     private void addCateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCateButtonActionPerformed
@@ -380,6 +449,102 @@ public class OtherGUI extends javax.swing.JPanel {
         AddSupplierDialog whid = new AddSupplierDialog(new javax.swing.JFrame(), true);
         whid.setVisible(true);
     }//GEN-LAST:event_addSupplierButtonActionPerformed
+
+    private void authorsTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_authorsTableMouseClicked
+        // TODO add your handling code here:
+        int row = authorsTable.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel)authorsTable.getModel();
+        if (row != -1) {
+            TableColumnModel columnModel = authorsTable.getColumnModel();
+            int columnIndex = columnModel.getColumnIndex("ID");
+            int id = (Integer) authorsTable.getValueAt(row, columnIndex);
+//            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
+            OtherBUS otherBUS = new OtherBUS();
+            this.author = otherBUS.getAuthorById(id);
+            JOptionPane.showMessageDialog(null, "Author: " + this.author.getId() + ", " + this.author.getName());
+        } else {
+            JOptionPane.showMessageDialog(null, "No row selected!");
+        }
+    }//GEN-LAST:event_authorsTableMouseClicked
+
+    private void delAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delAuthorButtonActionPerformed
+        // TODO add your handling code here:
+        OtherBUS otherBUS = new OtherBUS();
+        JOptionPane.showMessageDialog(null, otherBUS.deleteAuthor(this.author));
+        render();
+    }//GEN-LAST:event_delAuthorButtonActionPerformed
+
+    private void categoryTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_categoryTableMouseClicked
+        // TODO add your handling code here:
+        int row = categoryTable.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel)categoryTable.getModel();
+        if (row != -1) {
+            TableColumnModel columnModel = categoryTable.getColumnModel();
+            int columnIndex = columnModel.getColumnIndex("ID");
+            int id = (Integer) categoryTable.getValueAt(row, columnIndex);
+//            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
+            OtherBUS otherBUS = new OtherBUS();
+            this.category = otherBUS.getCategoryById(id);
+            JOptionPane.showMessageDialog(null, "Category: " + this.category.getId() + ", " + this.category.getName());
+        } else {
+            JOptionPane.showMessageDialog(null, "No row selected!");
+        }
+    }//GEN-LAST:event_categoryTableMouseClicked
+
+    private void delCateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delCateButtonActionPerformed
+        // TODO add your handling code here:
+        OtherBUS otherBUS = new OtherBUS();
+        JOptionPane.showMessageDialog(null, otherBUS.deleteCategory(this.category));
+        render();
+    }//GEN-LAST:event_delCateButtonActionPerformed
+
+    private void publishersTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_publishersTableMouseClicked
+        // TODO add your handling code here:
+        int row = publishersTable.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel)publishersTable.getModel();
+        if (row != -1) {
+            TableColumnModel columnModel = publishersTable.getColumnModel();
+            int columnIndex = columnModel.getColumnIndex("ID");
+            int id = (Integer) publishersTable.getValueAt(row, columnIndex);
+//            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
+            OtherBUS otherBUS = new OtherBUS();
+            this.publisher = otherBUS.getPublisherById(id);
+            JOptionPane.showMessageDialog(null, "publisher: " + this.publisher.getId() + ", " + this.publisher.getName());
+        } else {
+            JOptionPane.showMessageDialog(null, "No row selected!");
+        }
+    }//GEN-LAST:event_publishersTableMouseClicked
+
+    private void suppliersTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_suppliersTableMouseClicked
+        // TODO add your handling code here:
+        int row = suppliersTable.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel)suppliersTable.getModel();
+        if (row != -1) {
+            TableColumnModel columnModel = suppliersTable.getColumnModel();
+            int columnIndex = columnModel.getColumnIndex("ID");
+            int id = (Integer) suppliersTable.getValueAt(row, columnIndex);
+//            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
+            OtherBUS otherBUS = new OtherBUS();
+            this.supplier = otherBUS.getSupplierById(id);
+            JOptionPane.showMessageDialog(null, "supplier: " + this.supplier.getId() + ", " + this.supplier.getName());
+        } else {
+            JOptionPane.showMessageDialog(null, "No row selected!");
+        }
+    }//GEN-LAST:event_suppliersTableMouseClicked
+
+    private void delPublisherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delPublisherButtonActionPerformed
+        // TODO add your handling code here:
+        OtherBUS otherBUS = new OtherBUS();
+        JOptionPane.showMessageDialog(null, otherBUS.deletePublisher(this.publisher));
+        render();
+    }//GEN-LAST:event_delPublisherButtonActionPerformed
+
+    private void delSupplierButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delSupplierButtonActionPerformed
+        // TODO add your handling code here:
+        OtherBUS otherBUS = new OtherBUS();
+        JOptionPane.showMessageDialog(null, otherBUS.deleteSupplier(this.supplier));
+        render();
+    }//GEN-LAST:event_delSupplierButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
