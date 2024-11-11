@@ -4,18 +4,22 @@
  */
 package BUS;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import DAO.BookDAO;
 import DTO.AuthorDTO;
+import DTO.BookDTO;
 import DTO.BookNameDTO;
 import DTO.CategoryDTO;
 import DTO.FullBookDTO;
 import DTO.ImportDTO;
 import DTO.PublisherDTO;
 import DTO.SupplierDTO;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Vector;
 
 /**
  *
@@ -153,5 +157,15 @@ public class BookBUS {
     
     public boolean AddImport(ImportDTO importing) throws SQLException{
         return bookDAO.AddImport(importing);
+    }
+
+    // Get tất cả sách theo search condition, nếu search condition là null sẽ get tất cả sách
+    public List<BookDTO> getAllBookByCondition(Map<String, String> searchConditions) throws  SQLException{
+        return bookDAO.getAllBookByCondition(searchConditions);
+    }
+
+    // Xóa sách theo ISBN
+    public boolean deleteBookByISBN(String isbn) throws  SQLException{
+        return bookDAO.deleteBookByISBN(isbn);
     }
 }
