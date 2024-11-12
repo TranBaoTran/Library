@@ -50,6 +50,7 @@ GUI\ReaderGUI.class
 GUI\BorrowGUI$1.class
 GUI\AddBook$1.class
 GUI\OtherGUI$9.class
+GUI\StatisticGUI$2.class
 DAO\OtherDAO.class
 GUI\AddCateDialog.class
 GUI\ReaderGUI$3.class
