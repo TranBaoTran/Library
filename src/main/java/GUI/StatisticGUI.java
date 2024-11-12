@@ -4,6 +4,13 @@
  */
 package GUI;
 
+import BUS.BorrowBUS;
+import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
+import java.time.LocalDate;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author User
@@ -15,8 +22,55 @@ public class StatisticGUI extends javax.swing.JPanel {
      */
     public StatisticGUI() {
         initComponents();
+        render();
     }
+    
+    public void render(){
+         java.util.Date utilDateStart = new java.util.Date(oneMonthAgo().getTime());
+         java.util.Date utilDateEnd = new java.util.Date(toDay().getTime());
+         startDateChooser.setDate(utilDateStart);
+         endDateChooser.setDate(utilDateEnd);
+         BorrowBUS borrowBUS = new BorrowBUS();
+         displayBorrowDetail(borrowBUS.getBorrowFromDayToDay(oneMonthAgo(), toDay()));
+    }
+    
+    public void displayBorrowDetail(List<BorrowDTO> borrows){
+         // Tạo một DefaultTableModel với các cột: "ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"
+        String[] columnNames = {"ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0); // 0 dòng ban đầu
 
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            // Duyệt qua các chi tiết mượn (BorrowDetailDTO) của mỗi BorrowDTO
+            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                // Lấy thông tin từ BorrowDetailDTO
+                String ISBN = detail.getISBN();
+                String bookName = detail.getBookName();
+                String description = detail.getDescription();  // Phiên bản sách có thể là mô tả
+                int quantity = detail.getQuantity();  // Giả sử Số lượt mượn là quantity
+
+                // Thêm dòng vào model
+                model.addRow(new Object[]{ISBN, bookName, description, quantity});
+            }
+        }
+
+        // Cập nhật bảng với model mới
+        mostReadBookNumber.setModel(model);
+    }
+    
+    public java.sql.Date toDay(){
+        LocalDate today = LocalDate.now();
+        java.sql.Date sqlDate = java.sql.Date.valueOf(today);
+        return sqlDate;
+    }
+    
+    public java.sql.Date oneMonthAgo(){
+        LocalDate today = LocalDate.now();
+        LocalDate oneMonthAgo = today.minusMonths(1);
+        java.sql.Date sqlDate = java.sql.Date.valueOf(oneMonthAgo);
+        return sqlDate;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

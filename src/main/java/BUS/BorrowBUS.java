@@ -150,4 +150,8 @@ public class BorrowBUS {
             return false;
         }
     }
+    
+    public List<BorrowDTO> getBorrowFromDayToDay(java.sql.Date date1,java.sql.Date date2){
+        return borrowDao.getBorrowFromDayToDay(date1, date2);
+    }
 }

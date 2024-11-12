@@ -5,6 +5,7 @@
 package DAO;
 
 import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
 import connection.ConnectDB;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  *
@@ -332,4 +334,53 @@ public class BorrowDAO {
         }
     }
 
+    public List<BorrowDTO> getBorrowFromDayToDay(java.sql.Date date1,java.sql.Date date2){
+         List<BorrowDTO> borrowList = new ArrayList<>();
+        String query = "SELECT * FROM borrowing WHERE borrowDate BETWEEN ? AND ?";
+
+        try {
+            // Kết nối cơ sở dữ liệu
+            connectDB.connect();
+
+            // Chuẩn bị câu lệnh SQL
+            PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+            stmt.setDate(1, date1);
+            stmt.setDate(2, date2);
+
+            // Thực thi truy vấn
+            ResultSet rs = stmt.executeQuery();
+
+            // Duyệt kết quả và thêm vào danh sách
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String readerID = rs.getString("readerID");
+                String staffID = rs.getString("returnStaffID");
+                LocalDate borrowDate = rs.getDate("borrowDate").toLocalDate();
+                LocalDate dueDate = rs.getDate("dueDate").toLocalDate();
+                LocalDate returnDate = rs.getDate("returnDate") != null ? rs.getDate("returnDate").toLocalDate() : null;
+                boolean delay = rs.getBoolean("delay");
+                long fine = rs.getLong("fine");
+                boolean isActive = rs.getBoolean("isActive");
+
+                // Lấy thông tin chi tiết mượn
+                // Bạn có thể thực hiện truy vấn phụ ở đây để lấy chi tiết mượn nếu cần
+                BorrowDetailDAO borrowDetailDAO = new BorrowDetailDAO();
+                Vector<BorrowDetailDTO> borrowDetailDTO = borrowDetailDAO.getBorrowDetails(id);
+            
+                // Tạo đối tượng BorrowDTO và thêm vào danh sách
+                BorrowDTO borrow = new BorrowDTO(id, readerID, staffID, borrowDate, dueDate, returnDate, delay, fine, isActive, borrowDetailDTO);
+                borrowList.add(borrow);
+            }
+
+            // Đóng kết nối
+            rs.close();
+            stmt.close();
+            connectDB.disconnect();
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Xử lý lỗi nếu có
+        }
+
+        return borrowList;
+    }
 }
