@@ -8,14 +8,10 @@ import BUS.BorrowBUS;
 import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
@@ -447,6 +443,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
     private void initComponents() {
 
         borrowReceipt1 = new GUI.BorrowReceipt();
+        borrowReceipt1.setUpdateTableCallback(() ->  loadBorrowData(borrowReceiptTable)); //để call reload lại table borrowing
         panelBorder1 = new MyDesign.PanelBorder();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();

@@ -5,19 +5,22 @@
 package GUI;
 
 import BUS.BorrowBUS;
+import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
 import MyDesign.MyLabel;
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.sql.Date;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -42,13 +45,14 @@ public class BorrowReceipt extends javax.swing.JPanel {
     private BorrowDTO borrowDTO;
     private int count = 0;
     private List<JSpinner> spinners = new ArrayList<>();
-    private boolean isUpdatingFineLabel = false; // Biến cờ để kiểm tra việc cập nhật
 
-    private int previousBrokenValue = 0;
     // Khai báo map để lưu trữ ISBN cho mỗi JSpinner
     private Map<JSpinner, String> spinnerISBNMap = new HashMap<>();
     private List<BorrowListener> listeners = new ArrayList<>();
+
+    private Runnable updateTableCallback;
     BorrowBUS borrowBUS = new BorrowBUS();
+    
 
     /**
      * Creates new form BorrowReceipt
@@ -57,13 +61,30 @@ public class BorrowReceipt extends javax.swing.JPanel {
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-
+        
+        handleSetBorrow();
         setUpDetail();
         showBorrowReceipt();
 
         delayReturnButton.addActionListener(evt -> delayHandle());
 
         returnButton.addActionListener(evt -> returnBookHandle());
+    }
+
+    private void handleSetBorrow(){
+        borrowDTO = new BorrowDTO();
+        borrowDTO.setId(0);
+        borrowDTO.setReaderName("");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate date = LocalDate.parse("01/01/1990", formatter);
+    
+        borrowDTO.setDueDate(date);
+        borrowDTO.setBorrowDate(date);
+        borrowDTO.setStaffName("");
+        borrowDTO.setFine(0);
+        borrowDTO.setBorrowDetailDTO(new Vector<>());
+        
+        showBorrowReceipt();
     }
 
     private void delayHandle() {
@@ -74,7 +95,8 @@ public class BorrowReceipt extends javax.swing.JPanel {
             java.sql.Date newDate = java.sql.Date.valueOf(localDate); // Chuyển LocalDate sang java.sql.Date
             if (new BorrowBUS().setDelay(borrowDTO.getId(), newDate)) {
                 JOptionPane.showMessageDialog(null, "Gia hạn thành công");
-                notifyBookReturned(); // Gọi thông báo sau khi gia hạn thành công
+                handleSetBorrow();
+                notifyTableUpdate(); // Thông báo qua callback
             } else {
                 JOptionPane.showMessageDialog(null, "Đã xảy ra lỗi");
             }
@@ -87,14 +109,18 @@ public class BorrowReceipt extends javax.swing.JPanel {
 
         // Duyệt qua danh sách chi tiết mượn và cập nhật số lượng sách sẵn có
         for (BorrowDetailDTO tempBorrowDetail : borrowDTO.getBorrowDetailDTO()) {
-            borrowBUS.updateAvailable(tempBorrowDetail.getISBN(), tempBorrowDetail.getQuantity());
+            borrowBUS.updateAvailable(tempBorrowDetail.getISBN(),
+                    tempBorrowDetail.getQuantity() - tempBorrowDetail.getLost());
+            new BorrowDetailBUS().updateLostAndBroke(borrowDTO.getId(), tempBorrowDetail.getISBN(),
+                    tempBorrowDetail.getLost(), tempBorrowDetail.getBroke());
         }
 
         // Thực hiện trả sách
         boolean isReturned = borrowBUS.returnBook(borrowDTO.getId(), borrowDTO.getStaffID(), fineAmount);
         if (isReturned) {
             JOptionPane.showMessageDialog(this, "Trả sách thành công!");
-            notifyBookReturned(); // Gọi thông báo sau khi trả sách thành công
+            handleSetBorrow();
+            notifyTableUpdate(); // Thông báo qua callback
         } else {
             JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi trả sách.");
         }
@@ -202,21 +228,31 @@ public class BorrowReceipt extends javax.swing.JPanel {
             bookGBC.anchor = GridBagConstraints.WEST;
             bookContainer.add(new MyLabel("Mất", true), bookGBC);
 
+            JSpinner lostSpinner = new JSpinner(
+                    new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getBroke(), 1));
+            lostSpinner.setName("lostSpinner");
+            JSpinner brokenSpinner = new JSpinner(
+                    new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getLost() - bdDTO.getBroke(), 1));
+            brokenSpinner.setName("brokenSpinner");
+
             if (isReturn) {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
-                JSpinner lostSpinner = new JSpinner(new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getBroke(), 1));
-                lostSpinner.setName("lostSpinner");
                 spinners.add(lostSpinner);
                 bookContainer.add(lostSpinner, bookGBC);
                 // Thêm lostSpinner và ISBN của nó vào map
                 spinnerISBNMap.put(lostSpinner, bdDTO.getISBN());
 
-                lostSpinner.addChangeListener(evt -> {
-                    int lostValue = (int) lostSpinner.getValue();
-                    double fineAmount = calculateFineForBrokenItems();
-                    updateFineLabel(fineAmount);
+                // Xử lý cho `lostSpinner`
+                lostSpinner.addChangeListener(e -> handleSpinnerChange(brokenSpinner, lostSpinner, bdDTO));
+                lostSpinner.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            handleSpinnerChange(brokenSpinner, lostSpinner, bdDTO);
+                        }
+                    }
                 });
 
             } else {
@@ -237,18 +273,19 @@ public class BorrowReceipt extends javax.swing.JPanel {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
-                JSpinner brokenSpinner = new JSpinner(new SpinnerNumberModel(0, 0, bdDTO.getQuantity() - bdDTO.getLost(), 1));
-                // Đặt tên cho JSpinner để có thể nhận diện sau này
-                brokenSpinner.setName("brokenSpinner");
                 spinners.add(brokenSpinner);
                 bookContainer.add(brokenSpinner, bookGBC);
 
-                // Xử lý sự kiện khi thay đổi giá trị của brokenSpinner
-                brokenSpinner.addChangeListener(e -> {
-                    int brokenValue = (int) brokenSpinner.getValue();
-                    double fineAmount = calculateFineForBrokenItems();
-                    updateFineLabel(fineAmount);
+                brokenSpinner.addChangeListener(e -> handleSpinnerChange(brokenSpinner, lostSpinner, bdDTO));
+                brokenSpinner.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            handleSpinnerChange(brokenSpinner, lostSpinner, bdDTO);
+                        }
+                    }
                 });
+
             } else {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
@@ -336,6 +373,30 @@ public class BorrowReceipt extends javax.swing.JPanel {
         recieptDetail.add(staffLb, detailGBC);
     }
 
+    // Hàm xử lý logic tính toán
+    private void handleSpinnerChange(JSpinner brokenSpinner, JSpinner lostSpinner, BorrowDetailDTO bdDTO) {
+        // Lấy giá trị hiện tại của các spinner
+        int brokenValue = (int) brokenSpinner.getValue();
+        int lostValue = (int) lostSpinner.getValue();
+        int total = brokenValue + lostValue;
+
+        // Cập nhật giá trị cho bdDTO
+        bdDTO.setLost(lostValue);
+        bdDTO.setBroke(brokenValue);
+
+        // Kiểm tra tổng giá trị
+        if (total > bdDTO.getQuantity()) {
+            brokenSpinner.setValue(brokenValue - 1);
+            JOptionPane.showMessageDialog(null,
+                    "Tổng số lượng hỏng và mất không thể lớn hơn tổng số lượng sách có sẵn.", "Cảnh báo",
+                    JOptionPane.WARNING_MESSAGE);
+        } else {
+            // Tính tiền phạt nếu hợp lệ
+            double fineAmount = calculateFineForBrokenItems();
+            updateFineLabel(fineAmount);
+        }
+    }
+
     // Hàm cập nhật nhãn tiền phạt
     private void updateFineLabel(double fineAmount) {
         fineLb.setText(fineAmount + "");
@@ -346,22 +407,13 @@ public class BorrowReceipt extends javax.swing.JPanel {
 
     private double calculateFineForBrokenItems() {
         double totalFine = 0;
-        double finePerBrokenItem = 30000; //phạt 30.000đ cho mỗi quyển sách hỏng
+        double finePerBrokenItem = 30000; // phạt 30.000đ cho mỗi quyển sách hỏng
 
-        // Duyệt qua tất cả các thành phần trong `bookContainer` để lấy giá trị `brokenSpinner`
-        for (Component component : bookContainer.getComponents()) {
-            if (component instanceof JSpinner && "brokenSpinner".equals(component.getName())) {
-                int brokenValue = (int) ((JSpinner) component).getValue();
-                totalFine += brokenValue * finePerBrokenItem;
-            } else if (component instanceof JSpinner && "lostSpinner".equals(component.getName())) {
-                JSpinner spinner = (JSpinner) component;
-                String isbn = spinnerISBNMap.get(spinner);
-                double bookPrice = new BorrowBUS().selectPrice(isbn);
+        for (BorrowDetailDTO tempBorrowDetail : borrowDTO.getBorrowDetailDTO()) {
+            totalFine += tempBorrowDetail.getBroke() * finePerBrokenItem;
 
-                int lostValue = (int) ((JSpinner) component).getValue();
-                totalFine += lostValue * bookPrice;
-                System.out.println("ISBN của sách mất: " + bookPrice + ", Số lượng mất: " + lostValue);
-            }
+            double bookPrice = new BorrowBUS().selectPrice(tempBorrowDetail.getISBN());
+            totalFine += tempBorrowDetail.getLost() * bookPrice;
         }
         return totalFine;
     }
@@ -378,13 +430,24 @@ public class BorrowReceipt extends javax.swing.JPanel {
         }
     }
 
+    public void setUpdateTableCallback(Runnable updateTableCallback) {
+        this.updateTableCallback = updateTableCallback;
+    }
+    
+    private void notifyTableUpdate() {
+        if (updateTableCallback != null) {
+            updateTableCallback.run();
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
@@ -420,7 +483,8 @@ public class BorrowReceipt extends javax.swing.JPanel {
         jScrollPane1.setViewportView(bookContainer);
 
         delayReturnButton.setBackground(new java.awt.Color(255, 255, 255));
-        delayReturnButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-refresh.png"))); // NOI18N
+        delayReturnButton
+                .setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-refresh.png"))); // NOI18N
         delayReturnButton.setText("Gia hạn");
         delayReturnButton.setColor(new java.awt.Color(255, 255, 255));
         delayReturnButton.setColorOver(new java.awt.Color(255, 241, 241));
@@ -436,55 +500,66 @@ public class BorrowReceipt extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lbTrangThai, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
-            .addComponent(lbMaPM, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jLabel33, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(recieptDetail, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addComponent(delayReturnButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(returnButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(lbTrangThai, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
+                        .addComponent(lbMaPM, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel33, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(recieptDetail, javax.swing.GroupLayout.DEFAULT_SIZE, 287,
+                                                Short.MAX_VALUE)
+                                        .addComponent(jScrollPane1)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(22, 22, 22)
+                                                .addComponent(delayReturnButton, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(returnButton, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addContainerGap()));
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel33)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lbMaPM)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lbTrangThai)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addComponent(recieptDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(delayReturnButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(returnButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel33)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbMaPM)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbTrangThai)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 256,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(12, 12, 12)
+                                .addComponent(recieptDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 152,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11,
+                                        Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(delayReturnButton, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(returnButton, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap()));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bookContainer;
