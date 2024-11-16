@@ -16,7 +16,7 @@ public class PersonDTO {
     private String schoolYear;
     private RoleDTO roleDTO;
     
-    public PersonDTO(String id, String name, String tel, String address, String schoolYear, RoleDTO roleDTO) {
+    public PersonDTO(String id, String name, String tel, String address, String schoolYear) {
         this.id = id;
         this.name = name;
         this.tel = tel;

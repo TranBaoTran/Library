@@ -25,7 +25,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="panelBorder1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="staffDetail1" pref="329" max="32767" attributes="0"/>
+              <Component id="staffDetail1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -60,7 +60,7 @@
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="jComboBox1" min="-2" pref="138" max="-2" attributes="0"/>
+                                      <Component id="rolecombobox" min="-2" pref="138" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                       <Group type="102" attributes="0">
@@ -112,7 +112,7 @@
                       <Component id="staffIDTextField" alignment="0" min="-2" pref="28" max="-2" attributes="0"/>
                       <Component id="scanReaderButton" alignment="1" max="32767" attributes="0"/>
                       <Component id="jLabel5" alignment="0" min="-2" pref="28" max="-2" attributes="0"/>
-                      <Component id="jComboBox1" alignment="1" max="32767" attributes="0"/>
+                      <Component id="rolecombobox" alignment="1" max="32767" attributes="0"/>
                       <Component id="jLabel6" alignment="1" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -163,6 +163,9 @@
           </Properties>
         </Component>
         <Component class="MyDesign.MyTextField_Basic" name="staffIDTextField">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="staffIDTextFieldActionPerformed"/>
+          </Events>
         </Component>
         <Component class="MyDesign.MyButton" name="scanReaderButton">
           <Properties>
@@ -296,19 +299,52 @@
                     <Column editable="false" title="Vai tr&#xf2;" type="java.lang.Object"/>
                   </Table>
                 </Property>
+                <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                  <TableColumnModel selectionModel="0">
+                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
+                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
+                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
+                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
+                  </TableColumnModel>
+                </Property>
                 <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                   <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="staffTableMouseClicked"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JComboBox" name="jComboBox1">
+        <Component class="javax.swing.JComboBox" name="rolecombobox">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="0"/>
+              <StringArray count="2">
+                <StringItem index="0" value="Sinh vi&#xea;n"/>
+                <StringItem index="1" value="Gi&#x1ea3;ng vi&#xea;n"/>
+              </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rolecomboboxActionPerformed"/>
+          </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>

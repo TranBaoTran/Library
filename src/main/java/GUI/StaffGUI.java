@@ -4,7 +4,16 @@
  */
 package GUI;
 
+import BUS.PersonBUS;
+import BUS.RoleBUS;
+import DTO.PersonDTO;
+import DTO.RoleDTO;
+import static connection.ConnectDB.conn;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,9 +25,25 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     /**
      * Creates new form StaffGUI
      */
+    private PersonBUS personBUS;
+    private RoleBUS roleBUS;
     public StaffGUI() {
         initComponents();
+        personBUS = new PersonBUS(conn);
     }
+    
+    private void loadStaffTable() {
+    try {
+        List<PersonDTO> staffList = personBUS.getAllStaff();
+        DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
+        model.setRowCount(0);
+        for (PersonDTO staff : staffList) {
+            model.addRow(new Object[]{staff.getId(), staff.getName(), staff.getTel(), staff.getAddress()});
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, e.getMessage());
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -48,7 +73,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         txtFindStaff = new MyDesign.SearchText();
         jScrollPane1 = new javax.swing.JScrollPane();
         staffTable = new MyDesign.MyTable();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        rolecombobox = new javax.swing.JComboBox<>();
         staffDetail1 = new GUI.StaffDetail();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -58,6 +83,12 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setText("Mã nhân viên");
+
+        staffIDTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                staffIDTextFieldActionPerformed(evt);
+            }
+        });
 
         scanReaderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/scan.png"))); // NOI18N
         scanReaderButton.addActionListener(new java.awt.event.ActionListener() {
@@ -145,7 +176,19 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                 return canEdit [columnIndex];
             }
         });
+        staffTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                staffTableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(staffTable);
+
+        rolecombobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sinh viên", "Giảng viên" }));
+        rolecombobox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rolecomboboxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
@@ -162,7 +205,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                                 .addGroup(panelBorder1Layout.createSequentialGroup()
                                     .addComponent(jLabel6)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(rolecombobox, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addGroup(panelBorder1Layout.createSequentialGroup()
                                         .addComponent(jLabel2)
@@ -200,7 +243,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                     .addComponent(staffIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(scanReaderButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(rolecombobox, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(27, 27, 27)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -233,7 +276,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                 .addContainerGap()
                 .addComponent(panelBorder1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(staffDetail1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                .addComponent(staffDetail1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -258,8 +301,31 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
 
     private void myButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myButton1ActionPerformed
         // TODO add your handling code here:
+        try {
+        String id = staffIDTextField.getText().trim();
+        String name = staffNameTextField.getText().trim();
+        String tel = staffTelTextField.getText().trim();
+        String address = staffAddressTextField.getText().trim();
+        String role = (String) rolecombobox.getSelectedItem();
+        
+        if (id.isEmpty() || name.isEmpty() || tel.isEmpty() || role == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        PersonDTO staff = new PersonDTO(id, name, tel, address, role);
+        if (personBUS.addPerson(staff)) {
+            JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            loadStaffTable(); // Cập nhật lại bảng
+        } else {
+            JOptionPane.showMessageDialog(this, "Thêm nhân viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_myButton1ActionPerformed
 
+    
     private void txtFindStaffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindStaffActionPerformed
         String text = txtFindStaff.getText().trim();
         try {
@@ -270,9 +336,32 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         }
     }//GEN-LAST:event_txtFindStaffActionPerformed
 
+    private void staffIDTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_staffIDTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_staffIDTextFieldActionPerformed
+
+    private void rolecomboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rolecomboboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rolecomboboxActionPerformed
+
+    private void staffTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_staffTableMouseClicked
+        // TODO add your handling code here:
+        int selectedRow = staffTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            String id = staffTable.getValueAt(selectedRow, 0).toString();
+            String name = staffTable.getValueAt(selectedRow, 1).toString();
+            String tel = staffTable.getValueAt(selectedRow, 2).toString();
+            String role = staffTable.getValueAt(selectedRow, 3).toString();
+
+            staffIDTextField.setText(id);
+            staffNameTextField.setText(name);
+            staffTelTextField.setText(tel);
+            rolecombobox.setSelectedItem(role);
+        }
+    }//GEN-LAST:event_staffTableMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
@@ -285,6 +374,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     private MyDesign.MyButton myButton1;
     private MyDesign.PanelBorder panelBorder1;
     private MyDesign.PanelBorder_Basic panelBorder_Basic1;
+    private javax.swing.JComboBox<String> rolecombobox;
     private MyDesign.MyButton scanReaderButton;
     private MyDesign.MyTextField_Basic staffAddressTextField;
     private GUI.StaffDetail staffDetail1;
