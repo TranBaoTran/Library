@@ -25,6 +25,17 @@ public class PersonDTO {
         this.roleDTO = roleDTO;
     }
 
+    public PersonDTO(String id, String name, String tel, String address, String schoolYear, RoleDTO roleDTO) {
+        this.id = id;
+        this.name = name;
+        this.tel = tel;
+        this.address = address;
+        this.schoolYear = schoolYear;
+        this.roleDTO = roleDTO;
+    }
+    
+    
+
     public RoleDTO getRoleID() {
         return roleDTO;
     }

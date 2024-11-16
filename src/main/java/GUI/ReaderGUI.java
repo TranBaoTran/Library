@@ -4,7 +4,16 @@
  */
 package GUI;
 
+import BUS.PersonBUS;
+import DTO.BorrowDTO;
+import DTO.PersonDTO;
+import DTO.RoleDTO;
+import static connection.ConnectDB.conn;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -13,14 +22,43 @@ import javax.swing.JOptionPane;
 public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
+    PersonBUS personBus;
     /**
      * Creates new form ReaderGUI
      */
     public ReaderGUI() {
+        personBus = new PersonBUS();
+        
         initComponents();
         buttonGroup1.add(sinhvienRadioButton);
         buttonGroup1.add(giangvienRadioButton);
         jPanel2.setVisible(false);
+        
+        loadReaderData(readerTable);
+    }
+    
+    public void loadReaderData(javax.swing.JTable borrowReceiptTable) {
+        try {
+            List<PersonDTO> listReader = personBus.getAllReader();
+            DefaultTableModel model = (DefaultTableModel) readerTable.getModel();
+            model.setRowCount(0);
+            
+            for (PersonDTO reader : listReader) {
+                RoleDTO role = reader.getRoleID();
+                System.out.println("GUI.ReaderGUI.loadReaderData(): " + role.getId());
+                System.out.println("GUI.ReaderGUI.loadReaderData(): " + role.getId());
+                Object[] row = new Object[]{
+                    reader.getId(),
+                    reader.getName(),
+                    reader.getTel(),
+                    role.getId().equals("SV") ? "Sinh viên" : "Giảng viên"
+                };
+                model.addRow(row);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
     }
 
     /**

@@ -21,7 +21,11 @@ import java.util.List;
  */
 public class BorrowDAO {
 
-    connection.ConnectDB connectDB = new ConnectDB();
+    connection.ConnectDB connectDB;
+    
+    public BorrowDAO(){
+        connectDB = new ConnectDB();
+    }
 
     //tạo một phiếu mượn
     public int addBorrow(String readerID, String staffID, Date dueDate) throws SQLException {

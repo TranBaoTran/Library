@@ -18,12 +18,16 @@ import java.util.List;
 public class PersonBUS {
     private PersonDAO personDAO;
 
-    public PersonBUS(Connection conn) {
-        personDAO = new PersonDAO(conn);
+    public PersonBUS() {
+        personDAO = new PersonDAO();
     }
 
     public List<PersonDTO> getAllStaff() throws Exception {
         return personDAO.getAllStaff();
+    }
+    
+    public List<PersonDTO> getAllReader() throws Exception {
+        return personDAO.getAllReaders();
     }
     
     public boolean addPerson(PersonDTO person) {

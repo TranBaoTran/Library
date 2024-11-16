@@ -29,7 +29,8 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     private RoleBUS roleBUS;
     public StaffGUI() {
         initComponents();
-        personBUS = new PersonBUS(conn);
+        personBUS = new PersonBUS();
+        loadStaffTable();
     }
     
     private void loadStaffTable() {

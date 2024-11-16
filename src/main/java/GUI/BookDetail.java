@@ -42,7 +42,7 @@ public class BookDetail extends javax.swing.JPanel {
     
     public void setBook(){
         panelBorder1.setVisible(true);
-        jLabel1.setIcon(new ImageIcon(new javax.swing.ImageIcon(getClass().getResource(bookDTO.getImg())).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
+//        jLabel1.setIcon(new ImageIcon(new javax.swing.ImageIcon(getClass().getResource(bookDTO.getImg())).getImage().getScaledInstance(135, 192,Image.SCALE_SMOOTH)));
         lbNameBook.setText(bookDTO.getName());
         setUpBook();
     }
