@@ -16,6 +16,8 @@ import java.util.List;
 import DTO.AccountDTO;
 import DTO.RoleDTO;
 import connection.ConnectDB;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -212,5 +214,23 @@ public class AccountDAO {
         }
 
         return isUpdated; // Trả về true nếu cập nhật thành công, ngược lại là false
+    }
+
+    public boolean addAccount(AccountDTO accountDTO){
+        try {
+            connectDB.connect();
+            String query = "INSERT INTO `account`(`id`, `password`, `positionID`, `dayCreated`) VALUES (?, ?, ?, ?)";
+            PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+            stmt.setString(1, accountDTO.getId());
+            stmt.setString(2, accountDTO.getPassword());
+            System.out.println("DAO.AccountDAO.addAccount()"+accountDTO.getRoleDTO().getId());
+            stmt.setString(3, accountDTO.getRoleDTO().getId());
+            java.sql.Date sqlDate = java.sql.Date.valueOf(accountDTO.getDayCreated());
+            stmt.setDate(4, sqlDate);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            Logger.getLogger(AccountDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 }

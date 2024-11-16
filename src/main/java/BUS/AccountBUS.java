@@ -38,4 +38,8 @@ public class AccountBUS {
     public boolean changePassword(String accountId, String newPassword) throws SQLException {
         return accountDAO.changePassword(accountId, newPassword);
     }
+    
+    public boolean addAccount(AccountDTO accountDTO){
+        return accountDAO.addAccount(accountDTO);
+    }
 }

@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,6 +30,14 @@ public class PersonBUS {
     
     public List<PersonDTO> getAllReader() throws Exception {
         return personDAO.getAllReaders();
+    }
+    
+    public PersonDTO getPersonById(String id){
+        try {
+            return personDAO.getPersonById(id);
+        } catch (SQLException ex) {
+            Logger.getLogger(PersonBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }return null;
     }
     
     public boolean addPerson(PersonDTO person) {

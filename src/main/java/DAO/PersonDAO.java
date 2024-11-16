@@ -4,14 +4,11 @@
  */
 package DAO;
 
-import DTO.BorrowDetailDTO;
 import connection.ConnectDB;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import DTO.PersonDTO;
 import DTO.RoleDTO;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -123,6 +120,28 @@ public class PersonDAO {
             e.printStackTrace();
         }
         return readerList;
+    }
+    
+    public PersonDTO getPersonById(String id) throws SQLException {
+        try {
+            connectDB.connect();
+            PreparedStatement stmt = connectDB.getConnection().prepareStatement("SELECT * FROM person WHERE id = ?");
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new PersonDTO(
+                rs.getString("id"),
+                rs.getString("name"),
+                rs.getString("tel"),
+                rs.getString("address"),
+                rs.getString("schoolYear")
+            );
+            } else
+                return null;
+        } catch (SQLException e) {
+          throw e;
+        }
     }
 
 }

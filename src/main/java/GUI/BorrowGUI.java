@@ -178,7 +178,6 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
                 });
             }
         });
-
     }
 
     /*==============================  XỬ LÝ BORROW  ==================================*/

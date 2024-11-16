@@ -25,6 +25,13 @@ public class AccountDTO {
         this.dayCreated = dayCreated;
         this.isActive = isActive;
     }
+    
+        public AccountDTO(String id, String password, RoleDTO roleDTO, LocalDate dayCreated) {
+        this.id = id;
+        this.password = password;
+        this.roleDTO = roleDTO;
+        this.dayCreated = dayCreated;
+    }
 
     public AccountDTO() {
     }

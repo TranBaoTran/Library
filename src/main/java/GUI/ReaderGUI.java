@@ -4,12 +4,18 @@
  */
 package GUI;
 
+import BUS.AccountBUS;
 import BUS.PersonBUS;
+import DTO.AccountDTO;
 import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
 import DTO.PersonDTO;
 import DTO.RoleDTO;
-import static connection.ConnectDB.conn;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -23,18 +29,31 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
     PersonBUS personBus;
+    AccountBUS accountBUS;
     /**
      * Creates new form ReaderGUI
      */
     public ReaderGUI() {
         personBus = new PersonBUS();
+        try {
+            accountBUS = new AccountBUS();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         initComponents();
         buttonGroup1.add(sinhvienRadioButton);
         buttonGroup1.add(giangvienRadioButton);
         jPanel2.setVisible(false);
         
+        myButton1.addActionListener(evt -> addReader());
         loadReaderData(readerTable);
+        ClickReaderTable();
+        
     }
     
     public void loadReaderData(javax.swing.JTable borrowReceiptTable) {
@@ -60,7 +79,66 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
             JOptionPane.showMessageDialog(this, ex.getMessage());
         }
     }
+    
+    public void addReader(){
+        String id = readerIDTextField.getText();
+        String name = readerNameTextField.getText();
+        String tel = readerTelTextField.getText();
+        String address = readerAddressTextField.getText();
+        String schoolYear="";
+        RoleDTO role = new RoleDTO();
+        if(sinhvienRadioButton.isSelected()){
+            Integer startYear = Integer.valueOf(startYearSpinner.getValue().toString());
+            Integer endYear = Integer.valueOf(endYearSpinner.getValue().toString());
+            schoolYear = startYear + "-" + endYear;
+            
+            role.setId("SV");
+            role.setName("Sinh viên");
+        } else {
+            role.setId("GV");
+            role.setName("Giảng viên");
+        }
+        
+        if (id == null || name == null){
+            JOptionPane.showMessageDialog(this, "Mã độc giả và tên không được để trống");
+            readerIDTextField.requestFocus();
+        }else {
+            PersonDTO per = new PersonDTO(id, name, tel, address, schoolYear);
+            if(personBus.addPerson(per)){
+                LocalDate currentDate = LocalDate.now();
+                System.out.println("GUI.ReaderGUI.addReader()"+ id);
+                AccountDTO accountDTO = new AccountDTO(id, "123456789", role, currentDate);
+                if(accountBUS.addAccount(accountDTO))
+                    JOptionPane.showMessageDialog(this, "Thêm độc giả thành công!");
+                return;
+            }
+        }
+        JOptionPane.showMessageDialog(this, "Thêm độc thất bại!");
+    }
 
+    
+        private void ClickReaderTable() {
+        readerTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = readerTable.getSelectedRow();
+                System.out.println(".mouseClicked()");
+                if (selectedRow != -1) {
+                    String id = readerTable.getValueAt(selectedRow, 0).toString();
+                    String role = readerTable.getValueAt(selectedRow, 3).toString();
+                    System.out.println("id:" +id);
+                    PersonDTO person = personBus.getPersonById(id);
+                    if(person==null){
+                        System.out.println(".mouseClicked()");
+                        return;
+                    }
+                    person.setRoleID(new RoleDTO(role, role.equals("SV") ? "Sinh viên" : "Giảng viên"));
+                    readerDetail1.setPersonDTO(person);
+                    readerDetail1.showReaderDetail();
+                }
+            }
+        });
+
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

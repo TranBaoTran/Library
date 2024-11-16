@@ -26,6 +26,7 @@ public class ReaderDetail extends javax.swing.JPanel {
         }else{
             panelBorder1.setVisible(true);
             setValue(); //Mấy cái cá nhân nhét hết vô hàm này
+            loadValueReader(personDTO);
         }
     }
     
@@ -44,6 +45,21 @@ public class ReaderDetail extends javax.swing.JPanel {
             jLabel7.setVisible(true);
             startYearLabel.setVisible(true);
             endYearLabel.setVisible(true);
+        }
+    }
+    
+    public void loadValueReader(PersonDTO personDTO){
+        readerIdLabel.setText(personDTO.getId());
+        readerRoleLabel.setText(personDTO.getRoleID().getId().equals("SV") ? "Sinh viên" : "Giảng viên");
+        readerNameTextField.setText(personDTO.getName());
+        readerTelTextField.setText(personDTO.getTel());
+        
+        readerAddressTextField.setText(personDTO.getAddress());
+        String temp = personDTO.getSchoolYear();
+        if (temp != null) {
+            String[] element = temp.split("-");
+            startYearLabel.setText(element[0]);
+            endYearLabel.setText(element[1]);
         }
     }
 
