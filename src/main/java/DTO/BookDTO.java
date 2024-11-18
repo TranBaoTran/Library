@@ -12,6 +12,15 @@ import java.util.Vector;
  */
 public class BookDTO {
     private String ISBN;
+    private int nameID;
+
+    public int getNameID() {
+        return nameID;
+    }
+
+    public void setNameID(int nameID) {
+        this.nameID = nameID;
+    }
     private String name;
     private String img;
     private String publisher;

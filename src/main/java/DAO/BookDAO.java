@@ -438,6 +438,32 @@ public class BookDAO {
         return result;
     }
     
+    public Vector<String> getStringBookAuthor(int id) throws SQLException{
+        Vector<String> result = new Vector<>();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT author.* 
+                             FROM book JOIN bookauthor ON book.id = bookauthor.bookID
+                             JOIN author ON author.id = bookauthor.authorID
+                             WHERE book.isActive = 1 AND book.id = ?""";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   result.add(rs.getString(2));
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return result;
+    }
+    
     public Vector<CategoryDTO> getBookCategory(int id) throws SQLException{
         Vector<CategoryDTO> result = new Vector<>();
         connectDB.connect();
@@ -457,6 +483,32 @@ public class BookDAO {
                    u.setId(rs.getInt(1));
                    u.setName(rs.getString(2));
                    result.add(u);
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return result;
+    }
+    
+    public Vector<String> getStringBookCategory(int id) throws SQLException{
+        Vector<String> result = new Vector<>();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT category.* 
+                             FROM book JOIN bookcategory ON book.id = bookcategory.bookID
+                             JOIN category ON category.id = bookcategory.categoryID
+                             WHERE book.isActive = 1 AND book.id = ?""";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, id);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   result.add(rs.getString(2));
                 }
                  
             }catch(SQLException e){
@@ -489,6 +541,43 @@ public class BookDAO {
                    fullbook.setPublisher(new PublisherDTO(rs.getInt(5), rs.getString(6)));
                    fullbook.setEdition(rs.getString(7));
                    fullbook.setPrice(rs.getInt(8));
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return fullbook;
+    }
+    
+    public Vector<BookDTO> getAllBook() throws SQLException{
+        Vector<BookDTO> fullbook = new Vector<BookDTO>();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = """
+                             SELECT ISBN, bookID, book.name AS bookName, img, publisherID, publisher.name, edition, price, quantity, available, location
+                             FROM versionofbook JOIN book ON versionofbook.bookID = book.id 
+                             JOIN publisher ON versionofbook.publisherID = publisher.id
+                             """;
+                
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   BookDTO u = new BookDTO();
+                   u.setISBN(rs.getString(1));
+                   u.setNameID(rs.getInt(2));
+                   u.setName(rs.getString(3));
+                   u.setImg(rs.getString(4));
+                   u.setPublisher(rs.getString(6));
+                   u.setEdition(rs.getString(7));
+                   u.setPrice(rs.getLong(8));
+                   u.setQuantity(rs.getInt(9));
+                   u.setAvailable(rs.getInt(10));
+                   u.setLocation(rs.getString(11));
+                   fullbook.add(u);
                 }
                  
             }catch(SQLException e){
@@ -677,30 +766,18 @@ public class BookDAO {
                     BookDTO book = bookMap.get(isbn);
         
                     if (book == null) {
-                        book = new BookDTO(
-                                isbn,
-                                rs.getString("BookName"),
-                                rs.getString("img"),
-                                rs.getString("PublisherName"),
-                                new Vector<>(), // Placeholder cho authors
-                                new Vector<>(), // Placeholder cho categories
-                                rs.getString("edition"),
-                                rs.getString("location"),
-                                rs.getLong("price"),
-                                rs.getInt("quantity"),
-                                rs.getInt("available")
-                        );
+                        book = new BookDTO();
+                        book.setISBN(isbn);
+                        book.setName(rs.getString("BookName"));
+                        book.setNameID(rs.getInt("BookID"));
+                        book.setImg(rs.getString("img"));
+                        book.setPublisher(rs.getString("PublisherName"));
+                        book.setEdition(rs.getString("edition"));
+                        book.setLocation(rs.getString("location"));
+                        book.setPrice(rs.getLong("price"));
+                        book.setQuantity(rs.getInt("quantity"));
+                        book.setAvailable(rs.getInt("available"));
                         bookMap.put(isbn, book);
-                    }
-        
-                    String authorName = rs.getString("AuthorName");
-                    if (authorName != null && !book.getAuthors().contains(authorName)) {
-                        book.getAuthors().add(authorName);
-                    }
-        
-                    String categoryName = rs.getString("CategoryName");
-                    if (categoryName != null && !book.getCategories().contains(categoryName)) {
-                        book.getCategories().add(categoryName);
                     }
                 }
         

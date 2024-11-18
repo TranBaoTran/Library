@@ -161,11 +161,29 @@ public class BookBUS {
 
     // Get tất cả sách theo search condition, nếu search condition là null sẽ get tất cả sách
     public List<BookDTO> getAllBookByCondition(Map<String, String> searchConditions) throws  SQLException{
-        return bookDAO.getAllBookByCondition(searchConditions);
+        List<BookDTO> books = bookDAO.getAllBookByCondition(searchConditions);
+        if (!books.isEmpty()){
+            for (BookDTO u : books){
+                u.setAuthors(bookDAO.getStringBookAuthor(u.getNameID()));
+                u.setCategories(bookDAO.getStringBookCategory(u.getNameID()));
+            }
+        }
+        return books;
     }
 
     // Xóa sách theo ISBN
     public boolean deleteBookByISBN(String isbn) throws  SQLException{
         return bookDAO.deleteBookByISBN(isbn);
+    }
+    
+    public Vector<BookDTO> getAllBook() throws SQLException{
+        Vector<BookDTO> allBook = bookDAO.getAllBook();
+        if (!allBook.isEmpty()){
+            for (BookDTO u : allBook){
+                u.setAuthors(bookDAO.getStringBookAuthor(u.getNameID()));
+                u.setCategories(bookDAO.getStringBookCategory(u.getNameID()));
+            }
+        }
+        return allBook;
     }
 }

@@ -37,6 +37,7 @@ public class BookGUI extends javax.swing.JPanel {
     public BookGUI() {
         try {
             bookBus = new BookBUS();
+            this.books = bookBus.getAllBook();
         } catch (ClassNotFoundException | SQLException | IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -47,12 +48,20 @@ public class BookGUI extends javax.swing.JPanel {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        loadBookData(null);
+        updateTable();
         searchCondition = new HashMap<>();
 
         loadAuthorData();
         loadCategoryData();
         loadNXBData();
+    }
+    
+    private void updateTable(){
+        myTable1.setRowCount(0);      
+        for (BookDTO i : books){
+            Object row[] = {i.getISBN(), i.getName(), i.getEdition(), i.getLocation(), i.getQuantity()};
+            myTable1.addRow(row);
+        }
     }
 
     /**
