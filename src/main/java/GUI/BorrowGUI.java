@@ -146,8 +146,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
                     String newDescription = (String) bookBorrowTable.getValueAt(row, column);
                     BorrowDetailDTO borrowDetail = tempBorrowDetails.get(row);
                     if (borrowDetail != null) {
-                        String ISBN = borrowDetail.getISBN();
-                        updateDescription(ISBN, newDescription);
+                        borrowDetail.setDescription(newDescription);
                     }
                 }
             }
@@ -338,17 +337,6 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         }
     }
 
-    // Cập nhật description của borrowDetail vào list tạm thời
-    public void updateDescription(String ISBN, String description) {
-        BorrowDetailDTO existingDetail = findBorrowDetailByISBN(ISBN);
-
-        if (existingDetail != null) {
-            existingDetail.setDescription(description);
-            JOptionPane.showMessageDialog(null, "Đã cập nhật trong bộ nhớ tạm thời");
-        } else {
-            JOptionPane.showMessageDialog(null, "Đã có lỗi xảy ra");
-        }
-    }
 
     //tìm xem ISBN đã tồn tại trong list tạm thời chưa
     private BorrowDetailDTO findBorrowDetailByISBN(String ISBN) {
