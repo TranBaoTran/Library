@@ -6,8 +6,10 @@ package BUS;
 
 import DAO.BorrowDAO;
 import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +37,15 @@ public class BorrowBUS {
             e.printStackTrace();
             return -1;  // Trả về -1 nếu có lỗi xảy ra
         }
+    }
+    
+    public boolean AddBorrow(String readerID, String staffID, Date dueDate, List<BorrowDetailDTO> tempBorrowDetails ){
+        try {
+            return borrowDao.AddBorrow(readerID, staffID, dueDate, tempBorrowDetails);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     public List<BorrowDTO> sellectAll() {

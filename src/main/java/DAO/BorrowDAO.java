@@ -5,11 +5,13 @@
 package DAO;
 
 import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
 import connection.ConnectDB;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -335,5 +337,67 @@ public class BorrowDAO {
             }
         }
     }
+    
+     public boolean AddBorrow(String readerID, String staffID, Date dueDate, List<BorrowDetailDTO> tempBorrowDetails ) throws SQLException {
+        boolean flag = false;
+        connectDB.connect();
+
+        if (ConnectDB.conn != null) {
+            PreparedStatement preparedStatement = null;
+            try {
+                ConnectDB.conn.setAutoCommit(false); 
+                
+                String sql = "INSERT INTO borrowing (readerID, borrowStaffID, dueDate) VALUES (?, ?, ?)";
+                preparedStatement = ConnectDB.conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                preparedStatement.setString(1, readerID);
+                preparedStatement.setString(2, staffID);
+                preparedStatement.setDate(3, dueDate);
+
+                if (preparedStatement.executeUpdate() > 0) {
+                    int generatedID = -1; 
+                    ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        generatedID = generatedKeys.getInt(1);
+                    }
+
+                    for (BorrowDetailDTO tempBorrowDetail : tempBorrowDetails) {
+                        String query = "INSERT INTO `borrowdetail`(`borrowID`, `ISBN`, `quantity`, `description`) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement stmt = connectDB.getConnection().prepareStatement(query)) {
+                            stmt.setInt(1, generatedID);
+                            stmt.setString(2, tempBorrowDetail.getISBN());
+                            stmt.setInt(3, tempBorrowDetail.getQuantity());
+                            stmt.setString(4, tempBorrowDetail.getDescription());
+                            stmt.executeUpdate();
+                        }
+                        
+                        String updateQuery = "UPDATE `borrowdetail` SET `quantity` = ? WHERE ISBN = ? AND borrowID = ?";
+                        try (PreparedStatement updateStatement = connectDB.getConnection().prepareStatement(updateQuery)) {
+                            updateStatement.setInt(1, tempBorrowDetail.getQuantity());
+                            updateStatement.setString(2, tempBorrowDetail.getISBN());
+                            updateStatement.setInt(3, tempBorrowDetail.getBorrowID());
+                            updateStatement.executeUpdate();
+                        }
+                    }
+
+                    ConnectDB.conn.commit();
+                    flag = true;
+                }
+
+            } catch (SQLException e) {
+                try {
+                    ConnectDB.conn.rollback(); 
+                } catch (SQLException rollbackException) {
+                    rollbackException.printStackTrace();
+                }
+                e.printStackTrace();
+
+            } finally {
+                connectDB.disconnect(); 
+            }
+        }
+
+        return flag;
+    }
+
 
 }

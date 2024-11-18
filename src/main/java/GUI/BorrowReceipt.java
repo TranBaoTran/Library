@@ -140,7 +140,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
 
     private void setBorrowReceipt() {
         jPanel1.setVisible(true);
-        lbMaPM.setText(borrowDTO.getId() + "");
+        lbMaPM.setText("#" + borrowDTO.getId() + "");
         readerLb.setText(borrowDTO.getReaderName());
         staffLb.setText(borrowDTO.getStaffName());
         borrowDateLb.setText(convertLocalDateToString(borrowDTO.getBorrowDate()));

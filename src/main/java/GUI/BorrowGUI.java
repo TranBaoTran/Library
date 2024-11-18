@@ -8,6 +8,7 @@ import BUS.BorrowBUS;
 import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,14 +42,15 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         loadBorrowDetail(bookBorrowTable);
         loadBorrowData(borrowReceiptTable);
 
-        staffIDLb.setText("TT00000001");
+        staffIDLb.setText("1000000004");
         searchEvent();
         readerEvent();
         ISBNEvent();
         quantityEvent();
         updateDescriptionEvent();
         scanButton2.addActionListener(evt -> addBorrowing());
-        borrowDetailClick();
+        borrowReceiptTableClick();
+        borrowDetailTableClick();
         
 //        hfhf
     }
@@ -122,14 +124,17 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
 
     private void quantityEvent() {
         addBookButton.addActionListener(evt -> {
-            int new_quantity = (Integer) jSpinner1.getValue() + 1;
+            int new_quantity = (Integer) jSpinner1.getValue();
             jSpinner1.setValue(new_quantity);
+            handleAddOrDelBook(isUpdateQuantity, true);
         });
         delBookButton.addActionListener(evt -> {
-            int new_quantity = (Integer) jSpinner1.getValue() - 1;
+            int new_quantity = (Integer) jSpinner1.getValue();
             jSpinner1.setValue(new_quantity);
+            handleAddOrDelBook(isUpdateQuantity, false);
+//            updateOrDelTemporaryBorrowDetail(ISBNTextField.getText(), 0);
         });
-        jSpinner1.addChangeListener(evt -> handleAddOrUpdateBook(isUpdateQuantity));
+//        jSpinner1.addChangeListener(evt -> handleAddOrUpdateBook(isUpdateQuantity));
     }
 
     private void updateDescriptionEvent() {
@@ -149,7 +154,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         });
     }
 
-    private void borrowDetailClick() {
+    private void borrowReceiptTableClick() {
         borrowReceiptTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int selectedRow = borrowReceiptTable.getSelectedRow();
@@ -176,6 +181,18 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
                         loadBorrowData(borrowReceiptTable);
                     }
                 });
+            }
+        });
+    }
+    
+    private void borrowDetailTableClick() {
+        bookBorrowTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = bookBorrowTable.getSelectedRow();
+
+                if (selectedRow != -1) {
+                    ISBNTextField.setText(tempBorrowDetails.get(selectedRow).getISBN()); 
+                }
             }
         });
     }
@@ -256,7 +273,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         }
     }
 
-    private boolean handleAddOrUpdateBook(boolean flag) {
+    private boolean handleAddOrDelBook(boolean flag, boolean add) {
         String ISBN = ISBNTextField.getText().trim();
         String readerID = readerIDTextField.getText().trim();
         int quantity = (Integer) jSpinner1.getValue();
@@ -266,7 +283,10 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         }
 
         if (isValidInput(ISBN, readerID, quantity)) {
-            processTemporaryBorrowDetail(ISBN, quantity);
+            if (add)
+                processTemporaryBorrowDetail(ISBN, quantity);
+            else 
+                processTemporaryBorrowDetail(ISBN, 0);
         } else {
             JOptionPane.showMessageDialog(null, "Vui lòng nhập đủ thông tin", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         }
@@ -298,6 +318,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
             jSpinner1.setValue(quantity);
         } else {
             JOptionPane.showMessageDialog(null, "Kho hiện không đủ sách", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            jSpinner1.setValue(0);
         }
 
     }
@@ -349,21 +370,37 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         String reader = readerIDTextField.getText();
         String staff = staffIDLb.getText();
         Date dueDate = dueDateChooser.getDate();
+        Date currentDate = new Date(); // Ngày hiện tại
 
-        if (reader != null && staff != null) {
-            java.sql.Date sqlDueDate = new java.sql.Date(dueDate.getTime());
-            int borrowID = borrowBus.add(reader, staff, sqlDueDate);
-            for (BorrowDetailDTO tempBorrowDetail : tempBorrowDetails) {
-                addBorrowDetail(tempBorrowDetail, borrowID);
-                borrowBus.updateAvailable(tempBorrowDetail.getISBN(), -tempBorrowDetail.getQuantity());
-            }
-
-            JOptionPane.showMessageDialog(null, "Thành công", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-            loadBorrowData(borrowReceiptTable);
-        } else {
-            JOptionPane.showMessageDialog(null, "Thông tin độc giả hoặc nhân viên không hợp lệ", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        // Kiểm tra thông tin độc giả và nhân viên
+        if (reader == null || reader.trim().isEmpty() || staff == null || staff.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Thông tin độc giả, nhân viên không hợp lệ", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return; // Dừng nếu thông tin không hợp lệ
         }
+
+        // Kiểm tra chi tiết mượn sách
+        if (tempBorrowDetails == null || tempBorrowDetails.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Chưa có sách được chọn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return; // Dừng nếu không có sách được chọn
+        }
+
+        // Kiểm tra ngày trả
+        if (dueDate != null && dueDate.before(currentDate)) {
+            JOptionPane.showMessageDialog(null, "Ngày trả không nhỏ hơn ngày mượn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return; // Dừng nếu ngày trả không hợp lệ
+        }
+
+        // Chuyển đổi ngày trả thành kiểu java.sql.Date
+        java.sql.Date sqlDueDate = new java.sql.Date(dueDate.getTime());
+
+        // Thêm phiếu mượn
+        borrowBus.AddBorrow(reader, staff, sqlDueDate, tempBorrowDetails);
+
+        // Thông báo thành công và tải lại dữ liệu
+        JOptionPane.showMessageDialog(null, "Thành công", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        loadBorrowData(borrowReceiptTable);
     }
+
 
     private void addBorrowDetail(BorrowDetailDTO borrowDetail, int borrowID) {
         if (borrowDetail.getISBN() != null && borrowDetail.getQuantity() > 0) {
