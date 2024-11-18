@@ -4,6 +4,16 @@
  */
 package GUI;
 
+import BUS.BorrowBUS;
+import DTO.BorrowDTO;
+import DTO.BorrowDetailDTO;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author User
@@ -15,8 +25,145 @@ public class StatisticGUI extends javax.swing.JPanel {
      */
     public StatisticGUI() {
         initComponents();
+        // mặc định chọn ngày 
+        java.util.Date utilDateStart = new java.util.Date(twoMonthAgo().getTime());
+        java.util.Date utilDateEnd = new java.util.Date(toDay().getTime());
+        startDateChooser.setDate(utilDateStart);
+        endDateChooser.setDate(utilDateEnd);
+        render(twoMonthAgo(), toDay());
     }
+    
+    public int borrowTotal(List<BorrowDTO> borrows){
+        int total = 0;
 
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            // Duyệt qua danh sách BorrowDetailDTO của từng BorrowDTO
+            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                // Cộng dồn số lượt mượn
+                total += detail.getQuantity();
+            }
+        }
+        return total;
+    }
+    
+    public int lostTotal(List<BorrowDTO> borrows) {
+        int totalLost = 0;
+
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            // Duyệt qua danh sách BorrowDetailDTO của từng BorrowDTO
+            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                // Cộng dồn số lượt mất
+                totalLost += detail.getLost();
+            }
+        }
+
+        return totalLost;
+    }
+    
+    public int damagedTotal(List<BorrowDTO> borrows) {
+        int totalDamaged = 0;
+
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            // Duyệt qua danh sách BorrowDetailDTO của từng BorrowDTO
+            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                // Cộng dồn số sách hỏng
+                totalDamaged += detail.getBroke();
+            }
+        }
+
+        return totalDamaged;
+    }
+    
+    public double refundRate(List<BorrowDTO> borrows){
+        int onTimeCount = 0; // Biến đếm số lần hoàn trả đúng hạn
+        int total = 0;
+        
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            LocalDate returnDate = borrow.getReturnDate(); // Lấy returnDate của BorrowDTO
+            LocalDate dueDate = borrow.getDueDate(); // Lấy returnDate của BorrowDTO
+
+            // Kiểm tra nếu returnDate >= ngày hôm nay
+            if (returnDate != null) {
+                onTimeCount++; // Tăng biến đếm nếu trả đúng hạn
+            }
+            total++;
+        }
+        return onTimeCount / (total * 1.0) * 100;
+    }
+    
+    public void render(java.sql.Date date1, java.sql.Date date2){
+        BorrowBUS borrowBUS = new BorrowBUS();
+        List<BorrowDTO> list = borrowBUS.getBorrowFromDayToDay(date1, date2);
+        displayBorrowDetail(list);
+        borrowRecieptNumber.setText(borrowTotal(list) + "");
+        lostNumber.setText(lostTotal(list) + "");
+        brokeNumber.setText(damagedTotal(list) + "");
+        returnRate.setText(String.format("%.1f", refundRate(list)) + "%");
+    }
+    
+    public void displayBorrowDetail(List<BorrowDTO> borrows){
+        // Tạo một DefaultTableModel với các cột: "ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"
+        String[] columnNames = {"ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0); // 0 dòng ban đầu
+
+        // Tạo một Map để lưu tổng số lượt mượn cho mỗi sách (theo ISBN)
+        Map<String, Integer> borrowCountMap = new HashMap<>();
+        Map<String, String> bookNameMap = new HashMap<>();
+        Map<String, String> descriptionMap = new HashMap<>();
+
+        // Duyệt qua danh sách BorrowDTO
+        for (BorrowDTO borrow : borrows) {
+            // Duyệt qua các chi tiết mượn (BorrowDetailDTO) của mỗi BorrowDTO
+            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                String ISBN = detail.getISBN();
+                String bookName = detail.getBookName();
+                String description = detail.getDescription();
+                int quantity = detail.getQuantity();
+
+                // Cập nhật thông tin sách và mô tả
+                bookNameMap.put(ISBN, bookName);
+                descriptionMap.put(ISBN, description);
+
+                // Cập nhật tổng số lượt mượn cho ISBN hiện tại
+                borrowCountMap.put(ISBN, borrowCountMap.getOrDefault(ISBN, 0) + quantity);
+            }
+        }
+
+        // Tạo một danh sách từ borrowCountMap để sắp xếp theo số lượt mượn
+        List<Map.Entry<String, Integer>> sortedBorrowList = new ArrayList<>(borrowCountMap.entrySet());
+        sortedBorrowList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue())); // Sắp xếp từ cao đến thấp
+
+        // Thêm các dòng đã sắp xếp vào model
+        for (Map.Entry<String, Integer> entry : sortedBorrowList) {
+            String ISBN = entry.getKey();
+            int totalBorrowCount = entry.getValue();
+            String bookName = bookNameMap.get(ISBN);
+            String description = descriptionMap.get(ISBN);
+
+            model.addRow(new Object[]{ISBN, bookName, description, totalBorrowCount});
+        }
+
+        // Gán model cho bảng của bạn (ví dụ: mostReadBookNumberTable)
+        mostReadBookNumber.setModel(model);
+    }
+    
+    public java.sql.Date toDay(){
+        LocalDate today = LocalDate.now();
+        java.sql.Date sqlDate = java.sql.Date.valueOf(today);
+        return sqlDate;
+    }
+    
+    public java.sql.Date twoMonthAgo(){
+        LocalDate today = LocalDate.now();
+        LocalDate oneMonthAgo = today.minusMonths(2);
+        java.sql.Date sqlDate = java.sql.Date.valueOf(oneMonthAgo);
+        return sqlDate;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -52,11 +199,21 @@ public class StatisticGUI extends javax.swing.JPanel {
         jLabel1.setText("THỐNG KÊ TỪ");
 
         startDateChooser.setBackground(new java.awt.Color(255, 255, 255));
+        startDateChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                startDateChooserPropertyChange(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("ĐẾN");
 
         endDateChooser.setBackground(new java.awt.Color(255, 255, 255));
+        endDateChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                endDateChooserPropertyChange(evt);
+            }
+        });
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -255,6 +412,34 @@ public class StatisticGUI extends javax.swing.JPanel {
                 .addContainerGap(19, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void startDateChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_startDateChooserPropertyChange
+        // TODO add your handling code here:
+        java.util.Date utilDateStart = (java.util.Date) startDateChooser.getDate();
+        java.util.Date utilDateEnd = (java.util.Date) endDateChooser.getDate();
+        // Kiểm tra nếu utilDate không null để tránh lỗi NullPointerException
+        if (utilDateStart != null && utilDateEnd != null) {
+            // Ép kiểu java.util.Date sang java.sql.Date
+            java.sql.Date sqlDate1 = new java.sql.Date(utilDateStart.getTime());
+            java.sql.Date sqlDate2 = new java.sql.Date(utilDateEnd.getTime());
+            // Gọi hàm render() với sqlDate (nếu cần sử dụng)
+            render(sqlDate1, sqlDate2);
+        }
+    }//GEN-LAST:event_startDateChooserPropertyChange
+
+    private void endDateChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_endDateChooserPropertyChange
+        // TODO add your handling code here:
+        java.util.Date utilDateStart = (java.util.Date) startDateChooser.getDate();
+        java.util.Date utilDateEnd = (java.util.Date) endDateChooser.getDate();
+        // Kiểm tra nếu utilDate không null để tránh lỗi NullPointerException
+        if (utilDateStart != null && utilDateEnd != null) {
+            // Ép kiểu java.util.Date sang java.sql.Date
+            java.sql.Date sqlDate1 = new java.sql.Date(utilDateStart.getTime());
+            java.sql.Date sqlDate2 = new java.sql.Date(utilDateEnd.getTime());
+            // Gọi hàm render() với sqlDate (nếu cần sử dụng)
+            render(sqlDate1, sqlDate2);
+        }
+    }//GEN-LAST:event_endDateChooserPropertyChange
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

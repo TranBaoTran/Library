@@ -50,6 +50,7 @@ GUI\ReaderGUI.class
 GUI\BorrowGUI$1.class
 GUI\AddBook$1.class
 GUI\OtherGUI$9.class
+GUI\StatisticGUI$2.class
 DAO\OtherDAO.class
 GUI\AddCateDialog.class
 GUI\ReaderGUI$3.class
@@ -82,6 +83,7 @@ GUI\HomePage$4.class
 GUI\AddBook$10.class
 GUI\OtherGUI$6.class
 GUI\ReaderHistoryDialog$2.class
+GUI\AddAuthorsDialog$2$1.class
 GUI\AddBook$5.class
 GUI\StaffGUI.class
 MyDesign\Model_Menu.class
@@ -115,7 +117,6 @@ MyDesign\PanelBorder_Statistic_Blue.class
 GUI\AccountGUI$3.class
 GUI\OtherGUI$10.class
 GUI\AddSupplierDialog.class
-GUI\AddAuthorsDialog$3$1.class
 GUI\ReaderGUI$2.class
 GUI\OtherGUI$7.class
 GUI\ChooseSupplierDialog$4.class
@@ -150,7 +151,6 @@ com\mycompany\library\Library.class
 GUI\AddBookDialog$8.class
 GUI\AddPublisherDialog$1.class
 GUI\BarcodeListener.class
-GUI\AddAuthorsDialog$3.class
 GUI\AddBookDialog$2.class
 GUI\StaffGUI$3.class
 MyDesign\List_Menu$1.class

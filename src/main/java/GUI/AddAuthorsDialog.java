@@ -4,12 +4,16 @@
  */
 package GUI;
 
+import BUS.OtherBUS;
+import DTO.AuthorDTO;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author User
  */
 public class AddAuthorsDialog extends javax.swing.JDialog {
-
+    private OtherGUI otherGUI;
     /**
      * Creates new form AddAuthorsDialog
      */
@@ -17,6 +21,13 @@ public class AddAuthorsDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         setLocationRelativeTo(null);
+    }
+    
+    public AddAuthorsDialog(java.awt.Frame parent, boolean modal, OtherGUI otherGUI) {
+        super(parent, modal);
+        initComponents();
+        setLocationRelativeTo(null);
+        this.otherGUI = otherGUI;
     }
 
     public String getAuthorName() {
@@ -27,6 +38,30 @@ public class AddAuthorsDialog extends javax.swing.JDialog {
         return Integer.parseInt(birthYearTextField.getText());
     }
     
+    public boolean checkValidate(){
+        boolean result = true;
+    
+    // Kiểm tra nếu cả tên tác giả và năm sinh đều trống
+    if (this.authorNameTextField.getText().equals("") && this.birthYearTextField.getText().equals("")) {
+        JOptionPane.showMessageDialog(null, "Tên tác giả và năm sinh không được bỏ trống");
+        result = false;
+    } else if (this.authorNameTextField.getText().equals("")) {  // Kiểm tra nếu tên tác giả trống
+        JOptionPane.showMessageDialog(null, "Tên tác giả không được bỏ trống");
+        result = false;
+    } else if (this.birthYearTextField.getText().equals("")) {  // Kiểm tra nếu năm sinh trống
+        JOptionPane.showMessageDialog(null, "Năm sinh không được bỏ trống");
+        result = false;
+    } else {
+        // Kiểm tra nếu năm sinh không phải là số nguyên
+        try {
+            Integer.parseInt(this.birthYearTextField.getText());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Năm sinh phải là một số hợp lệ");
+            result = false;
+        }
+    }
+    return result;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -68,11 +103,6 @@ public class AddAuthorsDialog extends javax.swing.JDialog {
         jLabel9.setText("Năm sinh");
 
         birthYearTextField.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(229, 229, 229)));
-        birthYearTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                birthYearTextFieldActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout panelBorder_Basic1Layout = new javax.swing.GroupLayout(panelBorder_Basic1);
         panelBorder_Basic1.setLayout(panelBorder_Basic1Layout);
@@ -149,12 +179,18 @@ public class AddAuthorsDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void birthYearTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_birthYearTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_birthYearTextFieldActionPerformed
-
     private void addAuthorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAuthorButtonActionPerformed
         // TODO add your handling code here:
+        if(checkValidate()){
+            OtherBUS otherBUS = new OtherBUS();
+            String name = this.getAuthorName();
+            int year = this.getBirthYear();
+            AuthorDTO author = new AuthorDTO(name, year);
+            JOptionPane.showMessageDialog(null, otherBUS.addAuthor(author));
+            authorNameTextField.setText("");
+            birthYearTextField.setText("");
+            otherGUI.render();
+        }
     }//GEN-LAST:event_addAuthorButtonActionPerformed
 
     /**

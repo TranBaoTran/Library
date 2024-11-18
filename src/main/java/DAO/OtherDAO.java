@@ -184,6 +184,90 @@ public class OtherDAO {
         return true;
     }
     
+    public boolean addCategory(CategoryDTO category){
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try{
+            db.connect();
+            conn = db.getConnection();
+            String sql = "INSERT INTO category (name) VALUES (?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, category.getName());
+            int rowsInserted = stmt.executeUpdate();
+            if(!(rowsInserted > 0)){
+                return false;
+            }
+        }catch(SQLException e){
+            System.out.println("Lỗi: " + e.getMessage());
+            return false;
+        }finally {
+            try {
+                if (stmt != null) stmt.close();
+                db.disconnect(); // Đóng kết nối
+            } catch (SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+        return true;
+    }
+    
+     public boolean addPublisher(PublisherDTO publisher){
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try{
+            db.connect();
+            conn = db.getConnection();
+            String sql = "INSERT INTO publisher (name) VALUES (?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, publisher.getName());
+            int rowsInserted = stmt.executeUpdate();
+            if(!(rowsInserted > 0)){
+                return false;
+            }
+        }catch(SQLException e){
+            System.out.println("Lỗi: " + e.getMessage());
+            return false;
+        }finally {
+            try {
+                if (stmt != null) stmt.close();
+                db.disconnect(); // Đóng kết nối
+            } catch (SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+        return true;
+    }
+     
+     public boolean addSupplier(SupplierDTO supplier){
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try{
+            db.connect();
+            conn = db.getConnection();
+            String sql = "INSERT INTO supplier (name, address, tel) VALUES (?, ?, ?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, supplier.getName());
+            stmt.setString(2, supplier.getAddress());
+            stmt.setString(3, supplier.getTel());
+
+            int rowsInserted = stmt.executeUpdate();
+            if(!(rowsInserted > 0)){
+                return false;
+            }
+        }catch(SQLException e){
+            System.out.println("Lỗi: " + e.getMessage());
+            return false;
+        }finally {
+            try {
+                if (stmt != null) stmt.close();
+                db.disconnect(); // Đóng kết nối
+            } catch (SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+        return true;
+    }
+    
     public boolean deleteAuthor(AuthorDTO author){
         Connection conn = null;
         PreparedStatement stmt = null;

@@ -4,12 +4,17 @@
  */
 package GUI;
 
+import BUS.OtherBUS;
+import DTO.AuthorDTO;
+import DTO.CategoryDTO;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author User
  */
 public class AddCateDialog extends javax.swing.JDialog {
-
+    private OtherGUI otherGUI;
     /**
      * Creates new form AddCateDialog
      */
@@ -18,7 +23,23 @@ public class AddCateDialog extends javax.swing.JDialog {
         initComponents();
         setLocationRelativeTo(null);
     }
+    
+    public AddCateDialog(java.awt.Frame parent, boolean modal, OtherGUI otherGUI) {
+        super(parent, modal);
+        initComponents();
+        setLocationRelativeTo(null);
+        this.otherGUI = otherGUI;
+    }
 
+    public boolean checkValidate(){
+        boolean result = true;
+        if (this.cateNameTextField.getText().equals("")){
+            JOptionPane.showMessageDialog(null, "Tên thể loại không được bỏ trống");
+            result = false;
+        }
+        return result;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -122,6 +143,14 @@ public class AddCateDialog extends javax.swing.JDialog {
 
     private void addCateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCateButtonActionPerformed
         // TODO add your handling code here:
+        if(checkValidate()){
+            OtherBUS otherBUS = new OtherBUS();
+            String name = this.cateNameTextField.getText();
+            CategoryDTO category = new CategoryDTO(name);
+            JOptionPane.showMessageDialog(null, otherBUS.addCategory(category));
+            cateNameTextField.setText("");
+            otherGUI.render();
+        }
     }//GEN-LAST:event_addCateButtonActionPerformed
 
     /**
