@@ -75,4 +75,14 @@ public class PersonBUS {
             return new ArrayList<>();
         }
     }
+    
+    public List<PersonDTO> searchReadersWithRole(String keyword, boolean isSinhVienChecked, boolean isGiangVienChecked) {
+    try {
+        return personDAO.searchReadersWithRole(keyword, isSinhVienChecked, isGiangVienChecked);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return new ArrayList<>();
+    }
+}
+
 }

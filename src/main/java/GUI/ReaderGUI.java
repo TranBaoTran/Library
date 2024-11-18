@@ -113,7 +113,7 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
                 return;
             }
         }
-        JOptionPane.showMessageDialog(this, "Thêm độc thất bại!");
+        JOptionPane.showMessageDialog(this, "Thêm độc giả thất bại!");
     }
 
     
@@ -139,6 +139,52 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         });
 
     }
+    
+        public void refreshReaderTable() {
+        loadReaderData(readerTable);
+        readerDetail1.setPersonDTO(null);
+        readerDetail1.showReaderDetail();
+    }
+        
+        public void searchReaderData(javax.swing.JTable readerTable, String keyword, boolean isSinhVien, boolean isGiangVien) throws Exception {
+        List<PersonDTO> readerList = personBus.getAllReader();
+        DefaultTableModel model = (DefaultTableModel) readerTable.getModel();
+        model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
+
+        for (PersonDTO reader : readerList) {
+            // Kiểm tra từ khóa có tồn tại trong tên độc giả hoặc ID độc giả
+            boolean matchesKeyword = keyword.isEmpty()
+                    || reader.getName().toLowerCase().contains(keyword.toLowerCase())
+                    || reader.getId().toLowerCase().contains(keyword.toLowerCase());
+
+            // Kiểm tra loại độc giả (Sinh viên hoặc Giảng viên)
+            String roleId = reader.getRoleID().getId(); // Lấy ID vai trò
+            boolean matchesRole = !isSinhVien && !isGiangVien
+                    || (isSinhVien && "SV".equals(roleId))
+                    || (isGiangVien && "GV".equals(roleId));
+
+            // Chỉ thêm vào bảng nếu thỏa mãn cả từ khóa và loại độc giả
+            if (matchesKeyword && matchesRole) {
+                Object[] row = new Object[]{
+                    reader.getId(),
+                    reader.getName(),
+                    reader.getTel(),
+                    roleId.equals("SV") ? "Sinh viên" : "Giảng viên"
+                };
+                model.addRow(row);
+            }
+        }
+}
+    private void performReaderSearch() throws Exception {
+        
+        String keyword = txtFindReader.getText().trim(); // Lấy từ khóa từ ô tìm kiếm
+        boolean isSinhVien = sinhVienCheckBox.isSelected(); // Kiểm tra trạng thái "Sinh viên"
+        boolean isGiangVien = giangVienCheckBox.isSelected(); // Kiểm tra trạng thái "Giảng viên"
+        searchReaderData(readerTable, keyword, isSinhVien, isGiangVien);
+}
+
+
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -500,9 +546,11 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
     }//GEN-LAST:event_myButton1ActionPerformed
 
     private void txtFindReaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindReaderActionPerformed
+
+        
         String text = txtFindReader.getText().trim();
         try {
-
+              performReaderSearch();
         } catch (Exception e1) {
             // TODO Auto-generated catch block
             JOptionPane.showMessageDialog(null,e1.getMessage());
