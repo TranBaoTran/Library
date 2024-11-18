@@ -3,6 +3,7 @@ GUI\AddPublisherDialog.class
 GUI\ChooseCateDialog$2.class
 GUI\StaffDetail$1.class
 GUI\BorrowListener.class
+GUI\AccountGUI$6.class
 GUI\AddCateDialog$1.class
 DTO\BookDTO.class
 MyDesign\MyTextField.class
@@ -12,6 +13,7 @@ GUI\ImportGUI$2.class
 GUI\AddBook$2.class
 DAO\PersonDAO.class
 GUI\AddBookDialog$6.class
+GUI\AccountGUI$10.class
 GUI\OtherGUI$4.class
 MyDesign\List_Menu$2.class
 GUI\ChooseBookDialog$2.class
@@ -34,6 +36,7 @@ GUI\ChooseBookDialog$1.class
 GUI\AddBook$8.class
 GUI\BorrowGUI$2.class
 GUI\BookGUI$3.class
+GUI\AccountGUI$5.class
 GUI\OtherGUI$3.class
 GUI\StatisticGUI.class
 GUI\AddBook$7.class
@@ -70,6 +73,7 @@ GUI\ReaderDetail$1.class
 GUI\AddSupplierDialog$1.class
 GUI\BookGUI$5.class
 GUI\BorrowGUI$3.class
+BUS\RoleBUS.class
 MyDesign\MyTable$2.class
 MyDesign\TableHeader.class
 GUI\Menu.class
@@ -86,12 +90,14 @@ GUI\ReaderHistoryDialog$2.class
 GUI\AddAuthorsDialog$2$1.class
 GUI\AddBook$5.class
 GUI\StaffGUI.class
+GUI\AccountGUI$8.class
 MyDesign\Model_Menu.class
 GUI\HomePage$3.class
 MyDesign\PanelBorder_Basic.class
 GUI\BookDetail.class
 MyDesign\MyLabel.class
 GUI\OtherGUI$12.class
+GUI\AccountGUI$7.class
 GUI\ChooseSupplierDialog$2.class
 GUI\ReaderGUI$4.class
 GUI\AddBookDialog$9$1.class
@@ -126,10 +132,12 @@ GUI\AddBook$11.class
 GUI\ChooseAuthorDialog.class
 BUS\OtherBUS.class
 GUI\BorrowGUI$10.class
+GUI\AccountGUI$9.class
 DTO\BorrowDetailDTO.class
 GUI\AddBookDialog$3.class
 GUI\BorrowGUI.class
 GUI\BorrowGUI$9.class
+GUI\BorrowReceipt$2.class
 GUI\AddCateDialog$2$1.class
 GUI\ReaderGUI$1.class
 GUI\ReaderGUI$8.class
@@ -139,6 +147,7 @@ DTO\RoleDTO.class
 BUS\ImportBUS.class
 MyDesign\Item_Menu.class
 MyDesign\MyTextField$TextUI.class
+GUI\BorrowReceipt$1.class
 GUI\HomePage$1.class
 GUI\OtherGUI$2.class
 GUI\AccountGUI$4.class
@@ -168,6 +177,7 @@ GUI\AddBook$9.class
 GUI\ReaderHistoryDialog$2$1.class
 GUI\AccountGUI$2.class
 GUI\ReaderGUI$9.class
+DAO\RoleDAO.class
 DAO\AccountDAO.class
 GUI\ImportGUI$3.class
 GUI\StaffDetail.class
