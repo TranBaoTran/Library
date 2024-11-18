@@ -9,6 +9,7 @@ import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
 import MyDesign.MyLabel;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
@@ -25,6 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -121,6 +123,8 @@ public class BorrowReceipt extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Trả sách thành công!");
             handleSetBorrow();
             notifyTableUpdate(); // Thông báo qua callback
+            borrowDTO = null;
+            setBorrowDTO(borrowDTO);
         } else {
             JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi trả sách.");
         }
@@ -195,7 +199,10 @@ public class BorrowReceipt extends javax.swing.JPanel {
             bookGBC.gridx = 1;
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
-            bookContainer.add(new MyLabel(bdDTO.getBookName()), bookGBC);
+            MyLabel bookNameLB = new MyLabel(bdDTO.getBookName());
+            bookNameLB.setPreferredSize(new Dimension(200, 20));
+            bookNameLB.setHorizontalAlignment(SwingConstants.RIGHT);
+            bookContainer.add(bookNameLB, bookGBC);
 
             count++;
 
