@@ -414,15 +414,33 @@ public class StatisticGUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startDateChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_startDateChooserPropertyChange
-        // TODO add your handling code here:
+         // Lấy giá trị ngày từ các thành phần
         java.util.Date utilDateStart = (java.util.Date) startDateChooser.getDate();
         java.util.Date utilDateEnd = (java.util.Date) endDateChooser.getDate();
-        // Kiểm tra nếu utilDate không null để tránh lỗi NullPointerException
+    
+        // Kiểm tra nếu cả hai ngày không null để tránh lỗi NullPointerException
         if (utilDateStart != null && utilDateEnd != null) {
+            // So sánh ngày
+            if (utilDateStart.after(utilDateEnd)) {
+                // Hiển thị lời nhắc
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Ngày bắt đầu không được lớn hơn ngày kết thúc!", 
+                    "Lỗi", 
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+
+                // Đặt lại giá trị cũ cho startDateChooser
+                startDateChooser.setDate(previousStartDate);
+                return;
+            }
+
+            // Lưu ngày hiện tại vào previousStartDate trước khi gọi hàm khác
+            previousStartDate = utilDateStart;
+
             // Ép kiểu java.util.Date sang java.sql.Date
             java.sql.Date sqlDate1 = new java.sql.Date(utilDateStart.getTime());
             java.sql.Date sqlDate2 = new java.sql.Date(utilDateEnd.getTime());
-            // Gọi hàm render() với sqlDate (nếu cần sử dụng)
+
+            // Gọi hàm render() với sqlDate
             render(sqlDate1, sqlDate2);
         }
     }//GEN-LAST:event_startDateChooserPropertyChange
@@ -441,7 +459,7 @@ public class StatisticGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_endDateChooserPropertyChange
 
-
+    private java.util.Date previousStartDate;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel borrowRecieptNumber;
     private javax.swing.JLabel brokeNumber;
