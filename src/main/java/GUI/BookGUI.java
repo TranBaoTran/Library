@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 
 import BUS.BookBUS;
+import DTO.AccountDTO;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
@@ -30,11 +31,12 @@ public class BookGUI extends javax.swing.JPanel {
     private List<BookDTO> books;
     private  BookDTO targetBook;
     private Map<String, String> searchCondition;
+    private AccountDTO user;
 
     /**
      * Creates new form BookGUI
      */
-    public BookGUI() {
+    public BookGUI(AccountDTO user) {
         try {
             bookBus = new BookBUS();
             this.books = bookBus.getAllBook();
@@ -48,12 +50,19 @@ public class BookGUI extends javax.swing.JPanel {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        
+        this.user = user;
+        if(user == null || user.getRoleDTO().getId().equals("SV") || user.getRoleDTO().getId().equals("GV")){
+            editBookButton1.setVisible(false);
+        }
+        
         updateTable();
         searchCondition = new HashMap<>();
 
         loadAuthorData();
         loadCategoryData();
         loadNXBData();
+        
     }
     
     private void updateTable(){

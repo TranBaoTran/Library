@@ -37,13 +37,15 @@ public class HomePage extends javax.swing.JFrame {
         Menu.setMenuItemVisible(7, false);
         Menu.setMenuItemVisible(8, true);
         Menu.setMenuItemVisible(9, false);
+        
+        myButton1.setVisible(false);
 
         Menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
                 switch (index) {
                     case 0:
-                        setForm(new BookGUI());
+                        setForm(new BookGUI(account));
                         break;
                     case 1:
                         setForm(new BorrowGUI());
@@ -85,22 +87,44 @@ public class HomePage extends javax.swing.JFrame {
                 }
             }
         });
+        
+        Menu.triggerMenuItemClick(0);
     }
 
     private void addLoginAccount() {
         if (account != null) {
             System.out.println("Login successfully");
-            Menu.setMenuItemVisible(1, true);
-            Menu.setMenuItemVisible(2, true);
-            Menu.setMenuItemVisible(3, true);
-            Menu.setMenuItemVisible(4, true);
-            Menu.setMenuItemVisible(5, true);
-            Menu.setMenuItemVisible(6, true);
-            Menu.setMenuItemVisible(7, true);
-            Menu.setMenuItemVisible(8, false);
-            Menu.setMenuItemVisible(9, true);
+            
+            switch(account.getRoleDTO().getId()){
+                case "SV":
+                    break;
+                case "GV":
+                    break;
+                case "TT":
+                    break;
+                case "TK":
+                    myButton1.setVisible(true);
+                    Menu.setMenuItemVisible(1, false);
+                    Menu.setMenuItemVisible(2, false);
+                    Menu.setMenuItemVisible(3, false);
+                    Menu.setMenuItemVisible(4, false);
+                    Menu.setMenuItemVisible(5, true);
+                    Menu.setMenuItemVisible(6, false);
+                    Menu.setMenuItemVisible(7, true);
+                    Menu.setMenuItemVisible(8, false);
+                    Menu.setMenuItemVisible(9, true);
+                    break;
+                case "QL":
+                    myButton1.setVisible(true);
+                    break;
+                case "AD":
+                    break;
+            }
+            
+            
         } else {
             System.out.println("No account logged in");
+            myButton1.setVisible(false);
             Menu.setMenuItemVisible(1, false);
             Menu.setMenuItemVisible(2, false);
             Menu.setMenuItemVisible(3, false);
@@ -111,6 +135,7 @@ public class HomePage extends javax.swing.JFrame {
             Menu.setMenuItemVisible(8, true);
             Menu.setMenuItemVisible(9, false);
         }
+        Menu.triggerMenuItemClick(0);
     }
     
     private void setForm(JComponent com) {
@@ -240,7 +265,7 @@ public class HomePage extends javax.swing.JFrame {
 
     private void myButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myButton1ActionPerformed
         // TODO add your handling code here:
-        AddBookDialog whid = new AddBookDialog(new javax.swing.JFrame(), true);
+        AddBookDialog whid = new AddBookDialog(new javax.swing.JFrame(), true, account);
         whid.setVisible(true);
     }//GEN-LAST:event_myButton1ActionPerformed
 

@@ -23,6 +23,7 @@ public class ImportGUI extends javax.swing.JPanel {
     ImportBUS importBUS;
     Vector<ImportDTO> imports;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private Vector<ImportDTO> filteredImports;
     /**
      * Creates new form ImportGUI
      */
@@ -35,10 +36,33 @@ public class ImportGUI extends javax.swing.JPanel {
         try {
             importBUS = new ImportBUS();
             imports = importBUS.getAll();
+            filteredImports = importBUS.getAll();
         } catch (ClassNotFoundException | SQLException | IOException ex) {
             Logger.getLogger(ImportGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         setUpImportTable();
+        txtFindBorrowReceipt.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                performSearch(txtFindBorrowReceipt.getText());
+            }
+        });
+    }
+    
+    private void performSearch(String keyword){
+        importTable.setRowCount(0);
+        filteredImports.clear();    
+        for (ImportDTO i : imports) {
+            boolean matchesKeyword = keyword.isEmpty()
+                    || i.getAccount().getName().toLowerCase().contains(keyword.toLowerCase())
+                    || String.valueOf(i.getId()).contains(keyword);
+
+            if (matchesKeyword) {
+                filteredImports.add(i); 
+                Object row[] = {i.getId(), i.getAccount().getName(), i.getImportDate(), i.getFee()};
+                importTable.addRow(row);
+            }
+        }
     }
 
     private void setUpImportTable(){
@@ -75,6 +99,9 @@ public class ImportGUI extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         importDateLabel = new javax.swing.JLabel();
+        panelBorder_Basic1 = new MyDesign.PanelBorder_Basic();
+        jLabel10 = new javax.swing.JLabel();
+        txtFindBorrowReceipt = new MyDesign.SearchText();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -155,15 +182,49 @@ public class ImportGUI extends javax.swing.JPanel {
 
         importDateLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
+        jLabel10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/search.png"))); // NOI18N
+
+        txtFindBorrowReceipt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtFindBorrowReceiptActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelBorder_Basic1Layout = new javax.swing.GroupLayout(panelBorder_Basic1);
+        panelBorder_Basic1.setLayout(panelBorder_Basic1Layout);
+        panelBorder_Basic1Layout.setHorizontalGroup(
+            panelBorder_Basic1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder_Basic1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(txtFindBorrowReceipt, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 84, Short.MAX_VALUE)
+                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        panelBorder_Basic1Layout.setVerticalGroup(
+            panelBorder_Basic1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBorder_Basic1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelBorder_Basic1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBorder_Basic1Layout.createSequentialGroup()
+                        .addComponent(txtFindBorrowReceipt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addGap(16, 16, 16)
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 498, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panelBorder_Basic1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 498, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBorder1Layout.createSequentialGroup()
@@ -193,15 +254,20 @@ public class ImportGUI extends javax.swing.JPanel {
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)))
+                    .addGroup(panelBorder1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(panelBorder_Basic1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBorder1Layout.createSequentialGroup()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(priceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -253,9 +319,13 @@ public class ImportGUI extends javax.swing.JPanel {
         // TODO add your handling code here:
         int row = importTable.getSelectedRow();
         if (row >= 0) {
-            setUpDetailTable(imports.get(row));
+            setUpDetailTable(filteredImports.get(row));
         }
     }//GEN-LAST:event_importTableMouseClicked
+
+    private void txtFindBorrowReceiptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindBorrowReceiptActionPerformed
+        
+    }//GEN-LAST:event_txtFindBorrowReceiptActionPerformed
 
     private void setUpDetailTable(ImportDTO importDTO){
         importDetailTable.setRowCount(0);      
@@ -275,6 +345,7 @@ public class ImportGUI extends javax.swing.JPanel {
     private MyDesign.MyTable importDetailTable;
     private MyDesign.MyTable importTable;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -284,9 +355,11 @@ public class ImportGUI extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private MyDesign.PanelBorder panelBorder1;
+    private MyDesign.PanelBorder_Basic panelBorder_Basic1;
     private javax.swing.JLabel priceLabel;
     private javax.swing.JLabel staffIDLabel;
     private javax.swing.JLabel staffNameLabel;
     private javax.swing.JLabel supplierNameLabel;
+    private MyDesign.SearchText txtFindBorrowReceipt;
     // End of variables declaration//GEN-END:variables
 }

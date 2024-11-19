@@ -54,6 +54,12 @@ public class Menu extends javax.swing.JPanel {
         list_Menu1.repaint();  
     }
 
+    public void triggerMenuItemClick(int index) {
+        if (event != null) {
+            event.selected(index);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
