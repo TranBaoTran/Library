@@ -8,11 +8,15 @@ import BUS.BorrowBUS;
 import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
@@ -26,13 +30,21 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
 
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
-    BorrowBUS borrowBus = new BorrowBUS();
+    BorrowBUS borrowBus;
     BorrowDetailBUS borrowDetailBus = new BorrowDetailBUS();
 
     /**
      * Creates new form BorrowGUI
      */
     public BorrowGUI() {
+        try {
+            this.borrowBus = new BorrowBUS();
+        }catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -165,6 +177,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
                     // Lấy danh sách chi tiết mượn từ BorrowDetailBus
                     Vector<BorrowDetailDTO> borrowDetails = borrowDetailBus.getBorrowDetails(borrowID);
 
+                    System.out.println(".mouseClicked()" + borrowDetails.toString());
                     BorrowDTO borrowDTO = borrowBus.selectABorrow(borrowID);
                     borrowDTO.setBorrowDetailDTO(borrowDetails);
 
@@ -198,49 +211,57 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
 
     /*==============================  XỬ LÝ BORROW  ==================================*/
     public void loadBorrowData(javax.swing.JTable borrowReceiptTable) {
-        List<BorrowDTO> borrowList = borrowBus.sellectAll();
-        // Tạo mô hình bảng
-        DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
-        model.setRowCount(0);
-
-        for (BorrowDTO borrow : borrowList) {
-            Object[] row = new Object[]{
-                borrow.getId(),
-                borrow.getReaderName(),
-                borrow.getBorrowDate(),
-                borrow.getReturnDate(),
-                borrow.isIsActive() ? "Đang mượn" : "Đã trả" // Thay đổi theo tình trạng
-            };
-            model.addRow(row);
-        }
-    }
-
-    public void searchBorrowData(javax.swing.JTable borrowReceiptTable, String keyword, boolean isReturned, boolean isNotReturned) {
-        List<BorrowDTO> borrowList = borrowBus.sellectAll();
-        DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
-        model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
-
-        for (BorrowDTO borrow : borrowList) {
-            // Kiểm tra từ khóa có tồn tại trong tên người đọc hoặc ID phiếu mượn
-            boolean matchesKeyword = keyword.isEmpty()
-                    || borrow.getReaderName().toLowerCase().contains(keyword.toLowerCase())
-                    || String.valueOf(borrow.getId()).contains(keyword);
-
-            // Kiểm tra trạng thái (Đã trả hoặc Chưa trả)
-            boolean matchesStatus = !isReturned && !isNotReturned
-                    || (isReturned && !borrow.isIsActive()) || (isNotReturned && borrow.isIsActive());
-
-            // Chỉ thêm vào bảng nếu thỏa mãn cả từ khóa và trạng thái
-            if (matchesKeyword && matchesStatus) {
+        try {
+            List<BorrowDTO> borrowList = borrowBus.sellectAll();
+            // Tạo mô hình bảng
+            DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
+            model.setRowCount(0);
+            
+            for (BorrowDTO borrow : borrowList) {
                 Object[] row = new Object[]{
                     borrow.getId(),
                     borrow.getReaderName(),
                     borrow.getBorrowDate(),
                     borrow.getReturnDate(),
-                    borrow.isIsActive() ? "Đang mượn" : "Đã trả"
+                    borrow.isIsActive() ? "Đang mượn" : "Đã trả" // Thay đổi theo tình trạng
                 };
                 model.addRow(row);
             }
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void searchBorrowData(javax.swing.JTable borrowReceiptTable, String keyword, boolean isReturned, boolean isNotReturned) {
+        try {
+            List<BorrowDTO> borrowList = borrowBus.sellectAll();
+            DefaultTableModel model = (DefaultTableModel) borrowReceiptTable.getModel();
+            model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
+            
+            for (BorrowDTO borrow : borrowList) {
+                // Kiểm tra từ khóa có tồn tại trong tên người đọc hoặc ID phiếu mượn
+                boolean matchesKeyword = keyword.isEmpty()
+                        || borrow.getReaderName().toLowerCase().contains(keyword.toLowerCase())
+                        || String.valueOf(borrow.getId()).contains(keyword);
+                
+                // Kiểm tra trạng thái (Đã trả hoặc Chưa trả)
+                boolean matchesStatus = !isReturned && !isNotReturned
+                        || (isReturned && !borrow.isIsActive()) || (isNotReturned && borrow.isIsActive());
+                
+                // Chỉ thêm vào bảng nếu thỏa mãn cả từ khóa và trạng thái
+                if (matchesKeyword && matchesStatus) {
+                    Object[] row = new Object[]{
+                        borrow.getId(),
+                        borrow.getReaderName(),
+                        borrow.getBorrowDate(),
+                        borrow.getReturnDate(),
+                        borrow.isIsActive() ? "Đang mượn" : "Đã trả"
+                    };
+                    model.addRow(row);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -250,10 +271,6 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         boolean isNotReturned = notReturnedCheckBox.isSelected();       // Kiểm tra trạng thái "Chưa trả"
 
         searchBorrowData(borrowReceiptTable, keyword, isReturned, isNotReturned);
-    }
-
-    private void addBorrow() {
-
     }
 
     /*===========================XỬ LÝ BORROW DETAIL ==================================*/
@@ -386,6 +403,12 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
 
         // Thông báo thành công và tải lại dữ liệu
         JOptionPane.showMessageDialog(null, "Thành công", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        readerIDTextField.setText("");
+        readerNameLb.setText("");
+        ISBNTextField.setText("");
+        jSpinner1.setValue(0);
+        tempBorrowDetails.removeAll(tempBorrowDetails);
+        loadBorrowDetail(bookBorrowTable);
         loadBorrowData(borrowReceiptTable);
     }
 

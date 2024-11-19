@@ -7,11 +7,16 @@ package GUI;
 import BUS.BorrowBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -96,13 +101,19 @@ public class StatisticGUI extends javax.swing.JPanel {
     }
     
     public void render(java.sql.Date date1, java.sql.Date date2){
-        BorrowBUS borrowBUS = new BorrowBUS();
-        List<BorrowDTO> list = borrowBUS.getBorrowFromDayToDay(date1, date2);
-        displayBorrowDetail(list);
-        borrowRecieptNumber.setText(borrowTotal(list) + "");
-        lostNumber.setText(lostTotal(list) + "");
-        brokeNumber.setText(damagedTotal(list) + "");
-        returnRate.setText(String.format("%.1f", refundRate(list)) + "%");
+        try {
+            BorrowBUS borrowBUS = new BorrowBUS();
+            List<BorrowDTO> list = borrowBUS.getBorrowFromDayToDay(date1, date2);
+            displayBorrowDetail(list);
+            borrowRecieptNumber.setText(borrowTotal(list) + "");
+            lostNumber.setText(lostTotal(list) + "");
+            brokeNumber.setText(damagedTotal(list) + "");
+            returnRate.setText(String.format("%.1f", refundRate(list)) + "%");
+        }catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
     }
     
     public void displayBorrowDetail(List<BorrowDTO> borrows){

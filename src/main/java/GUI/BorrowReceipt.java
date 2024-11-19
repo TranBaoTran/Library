@@ -14,6 +14,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -53,13 +57,20 @@ public class BorrowReceipt extends javax.swing.JPanel {
     private List<BorrowListener> listeners = new ArrayList<>();
 
     private Runnable updateTableCallback;
-    BorrowBUS borrowBUS = new BorrowBUS();
+    BorrowBUS borrowBUS;
     
 
     /**
      * Creates new form BorrowReceipt
      */
     public BorrowReceipt() {
+        try {
+            this.borrowBUS = new BorrowBUS();
+        }catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -67,7 +78,6 @@ public class BorrowReceipt extends javax.swing.JPanel {
         handleSetBorrow();
         setUpDetail();
         showBorrowReceipt();
-
         delayReturnButton.addActionListener(evt -> delayHandle());
 
         returnButton.addActionListener(evt -> returnBookHandle());
@@ -93,15 +103,21 @@ public class BorrowReceipt extends javax.swing.JPanel {
         if (borrowBUS.checkReaderHasDelayed(borrowDTO.getId())) {
             JOptionPane.showMessageDialog(null, "Phiếu mượn đã gia hạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            LocalDate localDate = borrowDTO.getDueDate().plusDays(5); // Thêm 5 ngày kể từ dueDate
-            java.sql.Date newDate = java.sql.Date.valueOf(localDate); // Chuyển LocalDate sang java.sql.Date
-            if (new BorrowBUS().setDelay(borrowDTO.getId(), newDate)) {
-                JOptionPane.showMessageDialog(null, "Gia hạn thành công");
-                handleSetBorrow();
-                notifyTableUpdate(); // Thông báo qua callback
-            } else {
-                JOptionPane.showMessageDialog(null, "Đã xảy ra lỗi");
-            }
+            try {
+                LocalDate localDate = borrowDTO.getDueDate().plusDays(5); // Thêm 5 ngày kể từ dueDate
+                java.sql.Date newDate = java.sql.Date.valueOf(localDate); // Chuyển LocalDate sang java.sql.Date
+                if (new BorrowBUS().setDelay(borrowDTO.getId(), newDate)) {
+                    JOptionPane.showMessageDialog(null, "Gia hạn thành công");
+                    handleSetBorrow();
+                    notifyTableUpdate(); // Thông báo qua callback
+                } else {
+                    JOptionPane.showMessageDialog(null, "Đã xảy ra lỗi");
+                }
+            }catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         }
     }
 
@@ -174,6 +190,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
             delayReturnButton.setVisible(true);
             returnButton.setVisible(true);
         }
+        System.out.println("GUI.BorrowReceipt.setBorrowReceipt()" + borrowDTO.getBorrowDetailDTO());
         setUpBook();
     }
 
@@ -215,7 +232,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(bdDTO.getDescription()), bookGBC);
-
+            System.out.println("GUI.BorrowReceipt.setUpBook()"+ bdDTO.getDescription());
             count++;
 
             bookGBC.gridx = 0;
@@ -417,10 +434,16 @@ public class BorrowReceipt extends javax.swing.JPanel {
         double finePerBrokenItem = 30000; // phạt 30.000đ cho mỗi quyển sách hỏng
 
         for (BorrowDetailDTO tempBorrowDetail : borrowDTO.getBorrowDetailDTO()) {
-            totalFine += tempBorrowDetail.getBroke() * finePerBrokenItem;
-
-            double bookPrice = new BorrowBUS().selectPrice(tempBorrowDetail.getISBN());
-            totalFine += tempBorrowDetail.getLost() * bookPrice;
+            try {
+                totalFine += tempBorrowDetail.getBroke() * finePerBrokenItem;
+                
+                double bookPrice = new BorrowBUS().selectPrice(tempBorrowDetail.getISBN());
+                totalFine += tempBorrowDetail.getLost() * bookPrice;
+            } catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return 0;
+            }
         }
         return totalFine;
     }

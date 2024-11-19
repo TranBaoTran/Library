@@ -6,6 +6,7 @@ package BUS;
 
 import DAO.BorrowDetailDAO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -22,39 +23,70 @@ import javax.swing.table.DefaultTableModel;
  */
 public class BorrowDetailBUS {
 
-    private BorrowDetailDAO detailDAO;
+    protected static BorrowDetailDAO detailDAO;
     private BorrowBUS borrowBus;
     private Map<Integer, BorrowDetailDTO> borrowDetailMap = new HashMap<>(); // Lưu BorrowDetailDTO theo chỉ số hàng
 
     public BorrowDetailBUS() {
-        detailDAO = new BorrowDetailDAO();
-        borrowBus = new BorrowBUS();
+        try {
+            detailDAO = new BorrowDetailDAO();
+            borrowBus = new BorrowBUS();
+        } catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
     }
 
     // Gọi DAO để thêm 1 chi tiết chi tiết phiếu mượn
     public boolean add(BorrowDetailDTO detail) {
-        return detailDAO.add(detail);
+        try {
+            return detailDAO.add(detail);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     //Gọi DAO để cập nhật số lượng của 1 chi tiết phiếu mượn
     public boolean updateQuantity(BorrowDetailDTO detailDTO) {
-        return detailDAO.updateQuantity(detailDTO);
+        try {
+            return detailDAO.updateQuantity(detailDTO);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     //Gọi DAO để cập nhật mô tả của 1 chi tiết phiếu mượn
     public boolean updateDescription(int borrowID, String ISBN, String description) {
-        return detailDAO.updateDesciption(borrowID, ISBN, description);
+        try {
+            return detailDAO.updateDesciption(borrowID, ISBN, description);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     //Gọi DAO để cập nhật số lượng mất và hỏng
     public boolean updateLostAndBroke(int borrowID, String ISBN, int lost, int broke) {
-        return detailDAO.updateLostAndBroke(borrowID, ISBN, lost, broke);
+        try {
+            return detailDAO.updateLostAndBroke(borrowID, ISBN, lost, broke);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     // Lớp BUS
     public List<BorrowDetailDTO> loadBorrowDetailData(int borrowID) {
-        List<BorrowDetailDTO> borrowDetailList = detailDAO.selectAll(borrowID);
-        return borrowDetailList;
+        try {
+            List<BorrowDetailDTO> borrowDetailList = detailDAO.selectAll(borrowID);
+            return borrowDetailList;
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public boolean checkBorrowDetailExistence(String ISBN, int borrowID){
@@ -67,6 +99,11 @@ public class BorrowDetailBUS {
     }
     
     public Vector<BorrowDetailDTO> getBorrowDetails(int borrowID) {
-        return detailDAO.getBorrowDetails(borrowID);
+        try {
+            return detailDAO.getBorrowDetails(borrowID);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowDetailBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }
