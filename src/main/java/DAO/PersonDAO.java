@@ -78,18 +78,23 @@ public class PersonDAO {
     }
     public List<PersonDTO> getAllStaff() throws SQLException {
         connectDB.connect();
-        String query = "SELECT * FROM Person WHERE isActive = 1";
+//        String query = "SELECT * FROM Person WHERE isActive = 1";
+        String query = "SELECT person.*, account.positionID FROM person\n" +
+                            "INNER JOIN account ON person.id = account.id\n" +
+                            "WHERE account.positionID IN ('SV', 'GV')";
         Statement stmt = connectDB.getConnection().createStatement();
         ResultSet rs = stmt.executeQuery(query);
 
         List<PersonDTO> staffList = new ArrayList<>();
         while (rs.next()) {
+            RoleDTO roleDTO = new RoleDTO(rs.getString("positionID"), null);
             staffList.add(new PersonDTO(
                 rs.getString("id"),
                 rs.getString("name"),
                 rs.getString("tel"),
                 rs.getString("address"),
-                rs.getString("schoolYear")
+                rs.getString("schoolYear"),
+                roleDTO
             ));
         }
         return staffList;
@@ -143,6 +148,41 @@ public class PersonDAO {
           throw e;
         }
     }
+    
+    public List<PersonDTO> searchReadersWithRole(String keyword, boolean isSinhVienChecked, boolean isGiangVienChecked) {
+        List<PersonDTO> listReader = new ArrayList<>();
+        String sql = "SELECT * FROM Person WHERE (id LIKE ? OR name LIKE ? OR tel LIKE ?)"; // Truy vấn cơ bản
+
+        // Điều kiện để lọc theo vai trò
+        if (isSinhVienChecked && !isGiangVienChecked) {
+            sql += " AND roleId = 'SV'"; // Chỉ tìm Sinh viên
+        } else if (isGiangVienChecked && !isSinhVienChecked) {
+            sql += " AND roleId = 'GV'"; // Chỉ tìm Giảng viên
+        }
+
+        try (PreparedStatement stmt = connectDB.getConnection().prepareStatement(sql)) {
+            String searchKeyword = "%" + keyword + "%"; // Tìm kiếm với LIKE
+            stmt.setString(1, searchKeyword);
+            stmt.setString(2, searchKeyword);
+            stmt.setString(3, searchKeyword);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String id = rs.getString("id");
+                String name = rs.getString("name");
+                String tel = rs.getString("tel");
+                String address = rs.getString("address");
+                String schoolYear = rs.getString("schoolYear");
+                RoleDTO role = new RoleDTO(rs.getString("roleId"), rs.getString("roleName"));
+                PersonDTO person = new PersonDTO(id, name, tel, address, schoolYear, role);
+                listReader.add(person);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listReader;
+    }
+
 
 }
 

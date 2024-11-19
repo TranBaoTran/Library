@@ -812,12 +812,7 @@ public class BookDAO {
                 + "LEFT JOIN bookauthor ba ON b.id = ba.bookID "
                 + "LEFT JOIN author a ON ba.authorID = a.id "
                 + "LEFT JOIN bookcategory bc ON b.id = bc.bookID "
-                + "LEFT JOIN category c ON bc.categoryID = c.id "
-                + "WHERE "
-                + "b.isActive = 1 AND "
-                + "p.isActive = 1 AND "
-                + "c.isActive = 1 AND "
-                + "a.isActive = 1";
+                + "LEFT JOIN category c ON bc.categoryID = c.id ";
     }
 
     public boolean deleteBookByISBN(String isbn) throws SQLException {

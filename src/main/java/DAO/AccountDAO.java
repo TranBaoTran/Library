@@ -12,12 +12,13 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import DTO.AccountDTO;
 import DTO.RoleDTO;
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import connection.ConnectDB;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -218,11 +219,14 @@ public class AccountDAO {
         
         if (ConnectDB.conn != null) {
             ConnectDB.conn.setAutoCommit(false); // Tắt chế độ tự động commit
+
+            // Mã hóa mật khẩu mới bằng BCrypt
+            String hashedPassword = BCrypt.withDefaults().hashToString(12, newPassword.toCharArray());
     
             String sql = "UPDATE account SET password = ? WHERE id = ?"; // Giả sử bảng account có cột password
     
             try (PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql)) {
-                stmt.setString(1, newPassword); // Gán giá trị mật khẩu mới
+                stmt.setString(1, hashedPassword); // Gán giá trị mật khẩu mới
                 stmt.setString(2, accountId); // Gán ID tài khoản
     
                 int rowsAffected = stmt.executeUpdate(); // Thực hiện cập nhật
