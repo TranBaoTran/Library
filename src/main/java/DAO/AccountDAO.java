@@ -29,6 +29,32 @@ public class AccountDAO {
     public AccountDAO() throws ClassNotFoundException, SQLException, IOException {
         connectDB = new ConnectDB();
     }
+    
+    public AccountDTO login(String userid) throws SQLException{
+        AccountDTO a = new AccountDTO();
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{    
+                String sql = "SELECT account.id, account.password, role.id, role.name, person.name, account.dayCreated, account.isActive FROM account JOIN role ON account.positionID = role.id JOIN person ON account.id = person.id WHERE person.isActive = 1 AND account.id = ?";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setString(1, userid);
+                ResultSet rs = stmt.executeQuery();
+                
+                while(rs.next()) {
+                    a.setId(rs.getString(1));
+                    a.setPassword(rs.getString(2));
+                    a.setRoleDTO(new RoleDTO(rs.getString(3), rs.getString(4)));
+                    a.setName(rs.getString(5));
+                    a.setDayCreated(rs.getDate(6).toLocalDate());
+                    a.setIsActive(rs.getBoolean(7));
+                }
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return a;
+    }
 
     public List<AccountDTO> getFullAccount() throws SQLException {
         List<AccountDTO> accounts = new ArrayList<>(); // Khởi tạo danh sách AccountDTO

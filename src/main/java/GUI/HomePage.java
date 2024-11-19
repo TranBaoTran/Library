@@ -4,6 +4,7 @@
  */
 package GUI;
 
+import DTO.AccountDTO;
 import MyDesign.EventMenuSelected;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -11,13 +12,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author User
  */
 public class HomePage extends javax.swing.JFrame {
-
+    
+    AccountDTO account;
     /**
      * Creates new form HomePage
      */
@@ -25,10 +28,20 @@ public class HomePage extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         initMoving(this);
+        Menu.setMenuItemVisible(1, true);
+        Menu.setMenuItemVisible(2, true);
+        Menu.setMenuItemVisible(3, true);
+        Menu.setMenuItemVisible(4, true);
+        Menu.setMenuItemVisible(5, true);
+        Menu.setMenuItemVisible(6, true);
+        Menu.setMenuItemVisible(7, true);
+        Menu.setMenuItemVisible(8, false);
+        Menu.setMenuItemVisible(9, true);
+        
         Menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
-                switch(index){
+                switch (index) {
                     case 0:
                         setForm(new BookGUI());
                         break;
@@ -40,28 +53,64 @@ public class HomePage extends javax.swing.JFrame {
                         break;
                     case 3:
                         setForm(new StaffGUI());
-                        break;    
+                        break;
                     case 4:
                         setForm(new AccountGUI());
-                        break; 
+                        break;
                     case 5:
                         setForm(new OtherGUI());
-                        break; 
+                        break;
                     case 6:
                         setForm(new StatisticGUI());
-                        break; 
+                        break;
                     case 7:
                         setForm(new ImportGUI());
                         break;
-//                    default:
-//                        setForm(new BookGUI());
+                    case 8:
+                        Login dia = new Login(new javax.swing.JFrame(), true, 
+                                updatedAccount -> {
+                                        account = updatedAccount;
+                                        addLoginAccount();
+                                    });
+                        dia.setVisible(true);
+                        break;
+                    case 9:
+                        account = null;
+                        addLoginAccount();
+                        JOptionPane.showMessageDialog(null, "Bạn đã đăng xuất.");
+                        break;
+                    default:
+                        // Optionally handle other cases or do nothing
+                        break;
                 }
             }
-            
-            private void setVisible(boolean b) {
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-            }
         });
+    }
+
+    private void addLoginAccount() {
+        if (account != null) {
+            System.out.println("Login successfully");
+            Menu.setMenuItemVisible(1, true);
+            Menu.setMenuItemVisible(2, true);
+            Menu.setMenuItemVisible(3, true);
+            Menu.setMenuItemVisible(4, true);
+            Menu.setMenuItemVisible(5, true);
+            Menu.setMenuItemVisible(6, true);
+            Menu.setMenuItemVisible(7, true);
+            Menu.setMenuItemVisible(8, false);
+            Menu.setMenuItemVisible(9, true);
+        } else {
+            System.out.println("No account logged in");
+            Menu.setMenuItemVisible(1, false);
+            Menu.setMenuItemVisible(2, false);
+            Menu.setMenuItemVisible(3, false);
+            Menu.setMenuItemVisible(4, false);
+            Menu.setMenuItemVisible(5, false);
+            Menu.setMenuItemVisible(6, false);
+            Menu.setMenuItemVisible(7, false);
+            Menu.setMenuItemVisible(8, true);
+            Menu.setMenuItemVisible(9, false);
+        }
     }
     
     private void setForm(JComponent com) {

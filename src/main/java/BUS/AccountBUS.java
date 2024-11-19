@@ -22,6 +22,10 @@ public class AccountBUS {
     public AccountBUS() throws ClassNotFoundException, SQLException, IOException {
         accountDAO = new AccountDAO();
     }
+    
+    public AccountDTO login(String userid) throws SQLException{
+        return accountDAO.login(userid);
+    }
 
     public List<AccountDTO> getFullAccount() throws SQLException {
         return accountDAO.getFullAccount();
