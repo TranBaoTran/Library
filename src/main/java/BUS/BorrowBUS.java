@@ -7,6 +7,7 @@ package BUS;
 import DAO.BorrowDAO;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -23,21 +24,10 @@ public class BorrowBUS {
 
     private BorrowDAO borrowDao;
 
-    public BorrowBUS() {
+    public BorrowBUS() throws ClassNotFoundException, SQLException, IOException {
         borrowDao = new BorrowDAO();
     }
 
-    public int add(String readerID, String staffID, java.sql.Date dueDate) {
-        try {
-            if (readerID == null || staffID == null || dueDate == null) {
-                throw new IllegalArgumentException("Thông tin không đầy đủ.");
-            }
-            return borrowDao.addBorrow(readerID, staffID, dueDate);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;  // Trả về -1 nếu có lỗi xảy ra
-        }
-    }
     
     public boolean AddBorrow(String readerID, String staffID, Date dueDate, List<BorrowDetailDTO> tempBorrowDetails ){
         try {
@@ -48,12 +38,17 @@ public class BorrowBUS {
         return false;
     }
 
-    public List<BorrowDTO> sellectAll() {
+    public List<BorrowDTO> sellectAll() throws SQLException {
         return borrowDao.selectAll();
     }
 
     public BorrowDTO selectABorrow(int id) {
-        return borrowDao.selectABorrow(id);
+        try {
+            return borrowDao.selectABorrow(id);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowBUS.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     // Gọi DAO để lấy tên độc giả dựa trên readerID
@@ -105,11 +100,21 @@ public class BorrowBUS {
     }
     
     public boolean setDelay(int id, Date dueDate) {
-        return borrowDao.setDelay(id, dueDate);
+        try {
+            return borrowDao.setDelay(id, dueDate);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowBUS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
     
     public boolean returnBook(int id, String staffID,double fine){
-        return borrowDao.returnBook(id, staffID, fine);
+        try {
+            return borrowDao.returnBook(id, staffID, fine);
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowBUS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
     
     //kiểm tra xem độc giả có đang mượn sách không

@@ -6,6 +6,7 @@ package BUS;
 
 import DAO.BorrowDetailDAO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +28,14 @@ public class BorrowDetailBUS {
     private Map<Integer, BorrowDetailDTO> borrowDetailMap = new HashMap<>(); // Lưu BorrowDetailDTO theo chỉ số hàng
 
     public BorrowDetailBUS() {
-        detailDAO = new BorrowDetailDAO();
-        borrowBus = new BorrowBUS();
+        try {
+            detailDAO = new BorrowDetailDAO();
+            borrowBus = new BorrowBUS();
+        } catch (ClassNotFoundException | SQLException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
     }
 
     // Gọi DAO để thêm 1 chi tiết chi tiết phiếu mượn
