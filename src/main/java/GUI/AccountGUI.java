@@ -478,8 +478,27 @@ public class AccountGUI extends javax.swing.JPanel {
             LocalDate startDate = startDateChooser.getDate() != null ? startDateChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
             LocalDate endDate = endDateChooser.getDate() != null ? endDateChooser.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
             
+            // Kiểm tra điều kiện ngày tháng
+            LocalDate currentDate = LocalDate.now();
+            if (startDate != null && endDate != null) {
+                if (endDate.isBefore(startDate)) {
+                    JOptionPane.showMessageDialog(this, "Ngày kết thúc phải lớn hơn ngày bắt đầu.", "Lỗi ngày tháng", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+            
+            if (startDate != null && startDate.isAfter(currentDate)) {
+                JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được lớn hơn ngày hiện tại.", "Lỗi ngày tháng", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (endDate != null && endDate.isAfter(currentDate)) {
+                JOptionPane.showMessageDialog(this, "Ngày kết thúc không được lớn hơn ngày hiện tại.", "Lỗi ngày tháng", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
             Boolean isActive = null;
-
+    
             // Xác định trạng thái isActive dựa trên checkbox
             if (isLockedCheckBox.isSelected() && isOpenedCheckBox.isSelected()) {
                 isActive = null; // Cả hai đều được chọn
@@ -488,28 +507,28 @@ public class AccountGUI extends javax.swing.JPanel {
             } else if (isOpenedCheckBox.isSelected()) {
                 isActive = true; // Chỉ hoạt động
             }
-
+    
             System.out.println("isActive");
             System.out.println(isActive);
-
+    
             // Lấy giá trị từ roleComboBox
-            String selectedRole = (String) roleComboBox.getSelectedItem(); // Hoặc sử dụng kiểu dữ liệu đúng nếu bạn có một đối tượng RoleDTO
+            String selectedRole = (String) roleComboBox.getSelectedItem();
             if (selectedRole.equals("Tất cả")) {
                 selectedRole = null;
             }
-
+    
             // Kiểm tra điều kiện tìm kiếm
             if (accountId.isEmpty() && startDate == null && endDate == null && isActive == null && selectedRole == null) {
                 loadAccount();
                 return;
             }
-
+    
             // Gọi phương thức để tìm kiếm tài khoản với các điều kiện đã xác định
             List<AccountDTO> accounts = accountBus.getAccountBySearchCondition(accountId, startDate, endDate, isActive, selectedRole);
-
+    
             DefaultTableModel model = (DefaultTableModel) accountTable.getModel();
             model.setRowCount(0); // Xóa tất cả các hàng trong bảng trước khi thêm dữ liệu mới
-
+    
             for (AccountDTO account : accounts) {
                 System.out.println(account.getName());
                 model.addRow(new Object[]{
