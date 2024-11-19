@@ -31,6 +31,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         initComponents();
         personBUS = new PersonBUS();
         loadStaffTable();
+        ClickStaffTable();
     }
     
     private void loadStaffTable() {
@@ -39,12 +40,77 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
         model.setRowCount(0);
         for (PersonDTO staff : staffList) {
-            model.addRow(new Object[]{staff.getId(), staff.getName(), staff.getTel(), staff.getAddress()});
+            RoleDTO role = staff.getRoleID();
+                System.out.println("GUI.StaffGUI.loadStaffTable(): " + role.getId());
+                System.out.println("GUI.StaffGUI.loadStaffTable(): " + role.getId());
+            model.addRow(new Object[]{staff.getId(), staff.getName(), staff.getTel(),
+                role.getId().equals("SV") ? "Sinh viên" : "Giảng viên"});
         }
     } catch (Exception e) {
         JOptionPane.showMessageDialog(this, e.getMessage());
     }
 }
+    
+    private void ClickStaffTable() {
+        staffTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = staffTable.getSelectedRow();
+                System.out.println(".mouseClicked()");
+                if (selectedRow != -1) {
+                    String id = staffTable.getValueAt(selectedRow, 0).toString();
+                    String role = staffTable.getValueAt(selectedRow, 3).toString();
+                    System.out.println("id:" +id);
+                    PersonDTO person = personBUS.getPersonById(id);
+                    if(person==null){
+                        System.out.println(".mouseClicked()");
+                        return;
+                    }
+                    person.setRoleID(new RoleDTO(role, role.equals("SV") ? "Sinh viên" : "Giảng viên"));
+                    staffDetail1.setPersonDTO(person);
+                    staffDetail1.showStaffDetail();
+                }
+            }
+        });
+
+    }
+    public void refreshStaffTable() {
+        loadStaffTable();
+        staffDetail1.setPersonDTO(null);
+        staffDetail1.showStaffDetail();
+    }
+    
+    public void searchStaffData(javax.swing.JTable staffTable, String keyword) throws Exception {
+    List<PersonDTO> staffList = personBUS.getAllStaff(); // Lấy danh sách nhân viên từ BUS
+    DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
+    model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
+
+    for (PersonDTO staff : staffList) {
+        // Kiểm tra từ khóa có tồn tại trong mã, tên, điện thoại hoặc địa chỉ
+        boolean matchesKeyword = keyword.isEmpty()
+                || staff.getId().toLowerCase().contains(keyword.toLowerCase())
+                || staff.getName().toLowerCase().contains(keyword.toLowerCase())
+                || staff.getTel().toLowerCase().contains(keyword.toLowerCase())
+                || staff.getAddress().toLowerCase().contains(keyword.toLowerCase());
+
+        // Chỉ thêm vào bảng nếu thỏa mãn từ khóa
+        if (matchesKeyword) {
+            Object[] row = new Object[]{
+                staff.getId(),
+                staff.getName(),
+                staff.getTel(),
+                staff.getRoleID().getId().equals("SV") ? "Sinh viên" : "Giảng viên",
+                staff.getAddress()
+            };
+            model.addRow(row);
+        }
+    }
+}
+    private void performSearch() throws Exception {
+    String keyword = txtFindStaff.getText().trim(); // Lấy từ khóa từ ô tìm kiếm
+    searchStaffData(staffTable, keyword);           // Gọi phương thức tìm kiếm
+}
+
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -67,7 +133,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         staffTelTextField = new MyDesign.MyTextField_Basic();
         jLabel9 = new javax.swing.JLabel();
         staffAddressTextField = new MyDesign.MyTextField_Basic();
-        myButton1 = new MyDesign.MyButton();
+        addButton = new MyDesign.MyButton();
         jLabel2 = new javax.swing.JLabel();
         panelBorder_Basic1 = new MyDesign.PanelBorder_Basic();
         jLabel11 = new javax.swing.JLabel();
@@ -116,11 +182,11 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
             }
         });
 
-        myButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
-        myButton1.setText("Thêm");
-        myButton1.addActionListener(new java.awt.event.ActionListener() {
+        addButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
+        addButton.setText("Thêm");
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                myButton1ActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
 
@@ -215,7 +281,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                                     .addGroup(panelBorder1Layout.createSequentialGroup()
                                         .addComponent(jLabel9)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(myButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelBorder1Layout.createSequentialGroup()
                                         .addComponent(jLabel8)
                                         .addGap(18, 18, 18)
@@ -260,7 +326,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                         .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel9)
                             .addComponent(staffAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(myButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(panelBorder_Basic1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -300,7 +366,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         // TODO add your handling code here:
     }//GEN-LAST:event_staffAddressTextFieldActionPerformed
 
-    private void myButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myButton1ActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
         try {
         String id = staffIDTextField.getText().trim();
@@ -324,13 +390,13 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     } catch (Exception e) {
         JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
-    }//GEN-LAST:event_myButton1ActionPerformed
+    }//GEN-LAST:event_addButtonActionPerformed
 
     
     private void txtFindStaffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindStaffActionPerformed
         String text = txtFindStaff.getText().trim();
         try {
-
+            performSearch();
         } catch (Exception e1) {
             // TODO Auto-generated catch block
             JOptionPane.showMessageDialog(null,e1.getMessage());
@@ -346,23 +412,12 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     }//GEN-LAST:event_rolecomboboxActionPerformed
 
     private void staffTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_staffTableMouseClicked
-        // TODO add your handling code here:
-        int selectedRow = staffTable.getSelectedRow();
-        if (selectedRow >= 0) {
-            String id = staffTable.getValueAt(selectedRow, 0).toString();
-            String name = staffTable.getValueAt(selectedRow, 1).toString();
-            String tel = staffTable.getValueAt(selectedRow, 2).toString();
-            String role = staffTable.getValueAt(selectedRow, 3).toString();
 
-            staffIDTextField.setText(id);
-            staffNameTextField.setText(name);
-            staffTelTextField.setText(tel);
-            rolecombobox.setSelectedItem(role);
-        }
     }//GEN-LAST:event_staffTableMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private MyDesign.MyButton addButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
@@ -372,7 +427,6 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private MyDesign.MyButton myButton1;
     private MyDesign.PanelBorder panelBorder1;
     private MyDesign.PanelBorder_Basic panelBorder_Basic1;
     private javax.swing.JComboBox<String> rolecombobox;

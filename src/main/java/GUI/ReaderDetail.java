@@ -4,7 +4,9 @@
  */
 package GUI;
 
+import BUS.PersonBUS;
 import DTO.PersonDTO;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -17,13 +19,13 @@ public class ReaderDetail extends javax.swing.JPanel {
      */
     public ReaderDetail() {
         initComponents();
-//        showReaderDetail(); cái này lúc code nhớ bật
+//        showReaderDetail(); //cái này lúc code nhớ bật
     }
     
     public void showReaderDetail(){
         if (personDTO == null){
             panelBorder1.setVisible(false);
-        }else{
+        }else{    
             panelBorder1.setVisible(true);
             setValue(); //Mấy cái cá nhân nhét hết vô hàm này
             loadValueReader(personDTO);
@@ -89,7 +91,7 @@ public class ReaderDetail extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         readerRoleLabel = new javax.swing.JLabel();
         editBookButton = new MyDesign.MyButton();
-        editBookButton1 = new MyDesign.MyButton();
+        deleteBookButton1 = new MyDesign.MyButton();
         jLabel9 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -104,6 +106,11 @@ public class ReaderDetail extends javax.swing.JPanel {
         jLabel3.setText("Tên độc giả");
 
         readerNameTextField.setForeground(new java.awt.Color(0, 0, 0));
+        readerNameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                readerNameTextFieldActionPerformed(evt);
+            }
+        });
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel4.setText("Số điện thoại");
@@ -144,15 +151,15 @@ public class ReaderDetail extends javax.swing.JPanel {
             }
         });
 
-        editBookButton1.setForeground(new java.awt.Color(248, 67, 67));
-        editBookButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-delete-white.png"))); // NOI18N
-        editBookButton1.setColor(new java.awt.Color(255, 241, 241));
-        editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
-        editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        editBookButton1.setLabel("Xoá ");
-        editBookButton1.addActionListener(new java.awt.event.ActionListener() {
+        deleteBookButton1.setForeground(new java.awt.Color(248, 67, 67));
+        deleteBookButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-delete-white.png"))); // NOI18N
+        deleteBookButton1.setColor(new java.awt.Color(255, 241, 241));
+        deleteBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
+        deleteBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        deleteBookButton1.setLabel("Xoá ");
+        deleteBookButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editBookButton1ActionPerformed(evt);
+                deleteBookButton1ActionPerformed(evt);
             }
         });
 
@@ -171,49 +178,51 @@ public class ReaderDetail extends javax.swing.JPanel {
         panelBorder1Layout.setHorizontalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(readerIdLabel))
+                        .addContainerGap()
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(readerIdLabel))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(readerNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 87, Short.MAX_VALUE)
+                                .addComponent(readerTelTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(readerAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(endYearLabel))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(startYearLabel))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(readerRoleLabel))
+                            .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(readerNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 87, Short.MAX_VALUE)
-                        .addComponent(readerTelTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(readerAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(endYearLabel))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(startYearLabel))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(readerRoleLabel))
-                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addGap(83, 83, 83)
+                                .addComponent(jLabel1))
+                            .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addGap(33, 33, 33)
+                                .addComponent(editBookButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(deleteBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGap(83, 83, 83)
-                        .addComponent(jLabel1))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGap(33, 33, 33)
-                        .addComponent(editBookButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -251,7 +260,7 @@ public class ReaderDetail extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 233, Short.MAX_VALUE)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(editBookButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(deleteBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel9)
                 .addContainerGap())
@@ -270,12 +279,61 @@ public class ReaderDetail extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void editBookButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButtonActionPerformed
-        // TODO add your handling code here:
+        
+        if (personDTO == null) {
+            JOptionPane.showMessageDialog(this, "Không có thông tin độc giả để cập nhật!");
+            return;
+        }
+        String newName = readerNameTextField.getText();
+        String newTel = readerTelTextField.getText();
+        String newAddress = readerAddressTextField.getText();
+
+        if (newName.isEmpty() || newTel.isEmpty() || newAddress.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+            return;
+        }
+
+        personDTO.setName(newName);
+        personDTO.setTel(newTel);
+        personDTO.setAddress(newAddress);
+
+        boolean isUpdated = new PersonBUS().updatePerson(personDTO); // Gọi BUS để cập nhật
+        if (isUpdated) {
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin độc giả thành công!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin thất bại!");
+        }
+        if (isUpdated) {
+        JOptionPane.showMessageDialog(this, "Cập nhật thông tin độc giả thành công!");
+        ((ReaderGUI) this.getParent()).refreshReaderTable(); // Gọi làm mới từ GUI cha
+        }
     }//GEN-LAST:event_editBookButtonActionPerformed
 
-    private void editBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButton1ActionPerformed
+    private void deleteBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBookButton1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_editBookButton1ActionPerformed
+        if (personDTO == null) {
+        JOptionPane.showMessageDialog(this, "Không có thông tin độc giả để xóa!");
+        return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Bạn có chắc chắn muốn xóa độc giả này?", 
+            "Xác nhận", JOptionPane.YES_NO_OPTION);
+        boolean isDeleted = new PersonBUS().deletePerson(personDTO.getId());
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (isDeleted) {
+                JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
+                personDTO = null; // Xóa thông tin đang hiển thị
+                showReaderDetail();
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa độc giả thất bại!");
+            }
+        }
+        if (isDeleted) {
+        JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
+        ((ReaderGUI) this.getParent()).refreshReaderTable();
+        }
+    }//GEN-LAST:event_deleteBookButton1ActionPerformed
 
     private void jLabel9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel9MouseClicked
         // TODO add your handling code here:
@@ -283,10 +341,14 @@ public class ReaderDetail extends javax.swing.JPanel {
         whid.setVisible(true);
     }//GEN-LAST:event_jLabel9MouseClicked
 
+    private void readerNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readerNameTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_readerNameTextFieldActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private MyDesign.MyButton deleteBookButton1;
     private MyDesign.MyButton editBookButton;
-    private MyDesign.MyButton editBookButton1;
     private javax.swing.JLabel endYearLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

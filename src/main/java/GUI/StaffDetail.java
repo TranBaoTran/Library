@@ -4,7 +4,9 @@
  */
 package GUI;
 
+import BUS.PersonBUS;
 import DTO.PersonDTO;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,12 +21,13 @@ public class StaffDetail extends javax.swing.JPanel {
         initComponents();
     }
     
-    public void showReaderDetail(){
+    public void showStaffDetail(){
         if (personDTO == null){
             panelBorder1.setVisible(false);
         }else{
             panelBorder1.setVisible(true);
             setValue(); //Mấy cái cá nhân nhét hết vô hàm này
+            loadValueStaff(personDTO);
         }
     }
     
@@ -36,6 +39,13 @@ public class StaffDetail extends javax.swing.JPanel {
         
     }
     
+    public void loadValueStaff(PersonDTO personDTO){
+        staffIdLabel.setText(personDTO.getId());
+        roleComboBox.setSelectedItem(personDTO.getRoleID().getId().equals("SV") ? "Sinh viên" : "Giảng viên");
+        readerNameTextField.setText(personDTO.getName());
+        readerTelTextField.setText(personDTO.getTel());
+        readerAddressTextField.setText(personDTO.getAddress());
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -56,8 +66,8 @@ public class StaffDetail extends javax.swing.JPanel {
         readerAddressTextField = new MyDesign.MyTextField_Basic();
         staffIdLabel = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        editBookButton = new MyDesign.MyButton();
-        editBookButton1 = new MyDesign.MyButton();
+        editStaffButton = new MyDesign.MyButton();
+        deleteStaffButton1 = new MyDesign.MyButton();
         roleComboBox = new javax.swing.JComboBox<>();
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -86,27 +96,34 @@ public class StaffDetail extends javax.swing.JPanel {
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel8.setText("Vai trò");
 
-        editBookButton.setBackground(new java.awt.Color(22, 113, 221));
-        editBookButton.setForeground(new java.awt.Color(255, 255, 255));
-        editBookButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-refresh-white.png"))); // NOI18N
-        editBookButton.setColor(new java.awt.Color(22, 113, 221));
-        editBookButton.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        editBookButton.setLabel("Cập nhật ");
-        editBookButton.addActionListener(new java.awt.event.ActionListener() {
+        editStaffButton.setBackground(new java.awt.Color(22, 113, 221));
+        editStaffButton.setForeground(new java.awt.Color(255, 255, 255));
+        editStaffButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-refresh-white.png"))); // NOI18N
+        editStaffButton.setColor(new java.awt.Color(22, 113, 221));
+        editStaffButton.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        editStaffButton.setLabel("Cập nhật ");
+        editStaffButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editBookButtonActionPerformed(evt);
+                editStaffButtonActionPerformed(evt);
             }
         });
 
-        editBookButton1.setForeground(new java.awt.Color(248, 67, 67));
-        editBookButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-delete-white.png"))); // NOI18N
-        editBookButton1.setColor(new java.awt.Color(255, 241, 241));
-        editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
-        editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        editBookButton1.setLabel("Xoá ");
-        editBookButton1.addActionListener(new java.awt.event.ActionListener() {
+        deleteStaffButton1.setForeground(new java.awt.Color(248, 67, 67));
+        deleteStaffButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-delete-white.png"))); // NOI18N
+        deleteStaffButton1.setColor(new java.awt.Color(255, 241, 241));
+        deleteStaffButton1.setColorOver(new java.awt.Color(255, 241, 241));
+        deleteStaffButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        deleteStaffButton1.setLabel("Xoá ");
+        deleteStaffButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editBookButton1ActionPerformed(evt);
+                deleteStaffButton1ActionPerformed(evt);
+            }
+        });
+
+        roleComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sinh viên", "Giảng viên", " " }));
+        roleComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                roleComboBoxActionPerformed(evt);
             }
         });
 
@@ -144,9 +161,9 @@ public class StaffDetail extends javax.swing.JPanel {
                 .addGap(74, 74, 74))
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addGap(32, 32, 32)
-                .addComponent(editBookButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(editStaffButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(deleteStaffButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelBorder1Layout.setVerticalGroup(
@@ -174,10 +191,10 @@ public class StaffDetail extends javax.swing.JPanel {
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(readerAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 311, Short.MAX_VALUE)
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(editBookButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(editStaffButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(deleteStaffButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -193,18 +210,72 @@ public class StaffDetail extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void editBookButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButtonActionPerformed
+    private void editStaffButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editStaffButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_editBookButtonActionPerformed
+        if (personDTO == null) {
+            JOptionPane.showMessageDialog(this, "Không có thông tin nhân viên để cập nhật!");
+            return;
+        }
+        String newName = readerNameTextField.getText();
+        String newTel = readerTelTextField.getText();
+        String newAddress = readerAddressTextField.getText();
 
-    private void editBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButton1ActionPerformed
+        if (newName.isEmpty() || newTel.isEmpty() || newAddress.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
+            return;
+        }
+
+        personDTO.setName(newName);
+        personDTO.setTel(newTel);
+        personDTO.setAddress(newAddress);
+
+        boolean isUpdated = new PersonBUS().updatePerson(personDTO); // Gọi BUS để cập nhật
+        if (isUpdated) {
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin thất bại!");
+        }
+        if (isUpdated) {
+        JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
+        ((StaffGUI) this.getParent()).refreshStaffTable(); // Gọi làm mới từ GUI cha
+        }
+    }//GEN-LAST:event_editStaffButtonActionPerformed
+
+    private void deleteStaffButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteStaffButton1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_editBookButton1ActionPerformed
+                if (personDTO == null) {
+        JOptionPane.showMessageDialog(this, "Không có thông tin độc giả để xóa!");
+        return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Bạn có chắc chắn muốn xóa độc giả này?", 
+            "Xác nhận", JOptionPane.YES_NO_OPTION);
+        boolean isDeleted = new PersonBUS().deletePerson(personDTO.getId());
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (isDeleted) {
+                JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
+                personDTO = null; // Xóa thông tin đang hiển thị
+                showStaffDetail();
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa độc giả thất bại!");
+            }
+        }
+        if (isDeleted) {
+        JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
+        ((ReaderGUI) this.getParent()).refreshReaderTable();
+        }
+        
+    }//GEN-LAST:event_deleteStaffButton1ActionPerformed
+
+    private void roleComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roleComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_roleComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private MyDesign.MyButton editBookButton;
-    private MyDesign.MyButton editBookButton1;
+    private MyDesign.MyButton deleteStaffButton1;
+    private MyDesign.MyButton editStaffButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
