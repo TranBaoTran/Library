@@ -232,7 +232,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(bdDTO.getDescription()), bookGBC);
-
+            System.out.println("GUI.BorrowReceipt.setUpBook()"+ bdDTO.getDescription());
             count++;
 
             bookGBC.gridx = 0;

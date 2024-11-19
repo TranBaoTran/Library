@@ -273,10 +273,6 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         searchBorrowData(borrowReceiptTable, keyword, isReturned, isNotReturned);
     }
 
-    private void addBorrow() {
-
-    }
-
     /*===========================XỬ LÝ BORROW DETAIL ==================================*/
     // Nạp dữ liệu vào bảng từ list lưu trữ tạm thời "tempBorrowDetails"    
     private void loadBorrowDetail(javax.swing.JTable bookBorrowTable) {
@@ -410,7 +406,9 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
         readerIDTextField.setText("");
         readerNameLb.setText("");
         ISBNTextField.setText("");
+        jSpinner1.setValue(0);
         tempBorrowDetails.removeAll(tempBorrowDetails);
+        loadBorrowDetail(bookBorrowTable);
         loadBorrowData(borrowReceiptTable);
     }
 

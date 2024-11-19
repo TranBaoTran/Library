@@ -22,7 +22,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class BorrowBUS {
 
-    private BorrowDAO borrowDao;
+    protected static BorrowDAO borrowDao;
 
     public BorrowBUS() throws ClassNotFoundException, SQLException, IOException {
         borrowDao = new BorrowDAO();
@@ -168,6 +168,11 @@ public class BorrowBUS {
     }
     
     public List<BorrowDTO> getBorrowFromDayToDay(java.sql.Date date1,java.sql.Date date2){
-        return borrowDao.getBorrowFromDayToDay(date1, date2);
+        try {
+            return borrowDao.getBorrowFromDayToDay(date1, date2);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(BorrowBUS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }
