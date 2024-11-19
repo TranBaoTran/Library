@@ -28,16 +28,16 @@ public class HomePage extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         initMoving(this);
-        Menu.setMenuItemVisible(1, true);
-        Menu.setMenuItemVisible(2, true);
-        Menu.setMenuItemVisible(3, true);
-        Menu.setMenuItemVisible(4, true);
-        Menu.setMenuItemVisible(5, true);
-        Menu.setMenuItemVisible(6, true);
-        Menu.setMenuItemVisible(7, true);
-        Menu.setMenuItemVisible(8, false);
-        Menu.setMenuItemVisible(9, true);
-        
+        Menu.setMenuItemVisible(1, false);
+        Menu.setMenuItemVisible(2, false);
+        Menu.setMenuItemVisible(3, false);
+        Menu.setMenuItemVisible(4, false);
+        Menu.setMenuItemVisible(5, false);
+        Menu.setMenuItemVisible(6, false);
+        Menu.setMenuItemVisible(7, false);
+        Menu.setMenuItemVisible(8, true);
+        Menu.setMenuItemVisible(9, false);
+
         Menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
