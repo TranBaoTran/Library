@@ -14,11 +14,14 @@ import DTO.RoleDTO;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -30,6 +33,7 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
     String idScan = "";
     PersonBUS personBus;
     AccountBUS accountBUS;
+    List<PersonDTO> listReader;
     /**
      * Creates new form ReaderGUI
      */
@@ -46,6 +50,14 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         }
         
         initComponents();
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        SpinnerNumberModel startYearModel = new SpinnerNumberModel(currentYear, currentYear - 10, currentYear, 1);
+        SpinnerNumberModel endYearModel = new SpinnerNumberModel(currentYear, currentYear, currentYear + 10, 1);
+        startYearSpinner.setModel(startYearModel);
+        endYearSpinner.setModel(endYearModel);
+        
         buttonGroup1.add(sinhvienRadioButton);
         buttonGroup1.add(giangvienRadioButton);
         jPanel2.setVisible(false);
@@ -56,9 +68,26 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         
     }
     
+    public void setUpTable(){
+        readerTable.setRowCount(0);
+            
+        for (PersonDTO reader : listReader) {
+            RoleDTO role = reader.getRoleID();
+            System.out.println("GUI.ReaderGUI.loadReaderData(): " + role.getId());
+            System.out.println("GUI.ReaderGUI.loadReaderData(): " + role.getId());
+            Object[] row = new Object[]{
+                reader.getId(),
+                reader.getName(),
+                reader.getTel(),
+                role.getId().equals("SV") ? "Sinh viên" : "Giảng viên"
+            };
+            readerTable.addRow(row);
+        }
+    }
+    
     public void loadReaderData(javax.swing.JTable borrowReceiptTable) {
         try {
-            List<PersonDTO> listReader = personBus.getAllReader();
+            listReader = personBus.getAllReader();
             DefaultTableModel model = (DefaultTableModel) readerTable.getModel();
             model.setRowCount(0);
             
@@ -81,11 +110,44 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
     }
     
     public void addReader(){
-        String id = readerIDTextField.getText();
-        String name = readerNameTextField.getText();
-        String tel = readerTelTextField.getText();
-        String address = readerAddressTextField.getText();
+        String id = readerIDTextField.getText().trim();
+        String name = readerNameTextField.getText().trim();
+        String tel = readerTelTextField.getText().trim();
+        String address = readerAddressTextField.getText().trim();
         String schoolYear="";
+        
+        if (id.equals("") || name.equals("") || tel.equals("") || address.equals("")){
+            JOptionPane.showMessageDialog(this, "Không được bỏ trống trường nào");
+            return;
+        }
+        if (!id.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Mã độc giả không hợp lệ");
+            return;
+        }
+        if (!name.matches("^[\\p{L}\\s]+$")){
+            JOptionPane.showMessageDialog(this, "Tên không hợp lệ!");
+            return;
+        }
+        if (!tel.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+            return;
+        }
+        if (!sinhvienRadioButton.isSelected() && !giangvienRadioButton.isSelected()){
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn chức vụ!");
+            return;
+        }
+        try {
+            if (personBus.isPersonIdExist(id)){
+                JOptionPane.showMessageDialog(this, "Mã số này đã tồn tại!");
+                return;
+            }
+            if (personBus.isPersonPhoneExist(tel)){
+                JOptionPane.showMessageDialog(this, "Số điện thoại đã tồn tại!");
+                return;
+            } 
+        } catch (SQLException ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
         RoleDTO role = new RoleDTO();
         if(sinhvienRadioButton.isSelected()){
             Integer startYear = Integer.valueOf(startYearSpinner.getValue().toString());
@@ -97,41 +159,31 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         } else {
             role.setId("GV");
             role.setName("Giảng viên");
+            schoolYear = "";
         }
         
-        if (id == null || name == null){
-            JOptionPane.showMessageDialog(this, "Mã độc giả và tên không được để trống");
-            readerIDTextField.requestFocus();
-        }else {
-            PersonDTO per = new PersonDTO(id, name, tel, address, schoolYear);
-            if(personBus.addPerson(per)){
-                LocalDate currentDate = LocalDate.now();
-                System.out.println("GUI.ReaderGUI.addReader()"+ id);
-                AccountDTO accountDTO = new AccountDTO(id, "123456789", role, currentDate);
-                if(accountBUS.addAccount(accountDTO))
-                    JOptionPane.showMessageDialog(this, "Thêm độc giả thành công!");
-                return;
-            }
-        }
-        JOptionPane.showMessageDialog(this, "Thêm độc giả thất bại!");
+        PersonDTO per = new PersonDTO(id, name, tel, address, schoolYear, role);
+        
+        if(personBus.addPerson(per)){
+            JOptionPane.showMessageDialog(this, "Thêm độc giả thành công!");
+            refreshReaderTable();
+        }else{
+            JOptionPane.showMessageDialog(this, "Thêm độc giả thất bại!");
+        }      
     }
 
     
-        private void ClickReaderTable() {
+    private void ClickReaderTable() {
         readerTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int selectedRow = readerTable.getSelectedRow();
                 System.out.println(".mouseClicked()");
-                if (selectedRow != -1) {
-                    String id = readerTable.getValueAt(selectedRow, 0).toString();
-                    String role = readerTable.getValueAt(selectedRow, 3).toString();
-                    System.out.println("id:" +id);
-                    PersonDTO person = personBus.getPersonById(id);
+                if (selectedRow >= 0) {
+                    PersonDTO person = listReader.get(selectedRow);
                     if(person==null){
                         System.out.println(".mouseClicked()");
                         return;
                     }
-                    person.setRoleID(new RoleDTO(role, role.equals("SV") ? "Sinh viên" : "Giảng viên"));
                     readerDetail1.setPersonDTO(person);
                     readerDetail1.showReaderDetail();
                 }
@@ -140,18 +192,16 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
 
     }
     
-        public void refreshReaderTable() {
+    public void refreshReaderTable() {
         loadReaderData(readerTable);
-        readerDetail1.setPersonDTO(null);
-        readerDetail1.showReaderDetail();
     }
         
-        public void searchReaderData(javax.swing.JTable readerTable, String keyword, boolean isSinhVien, boolean isGiangVien) throws Exception {
-        List<PersonDTO> readerList = personBus.getAllReader();
+    public void searchReaderData(javax.swing.JTable readerTable, String keyword, boolean isSinhVien, boolean isGiangVien) throws Exception {
+        listReader = personBus.getAllReader();
         DefaultTableModel model = (DefaultTableModel) readerTable.getModel();
         model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
 
-        for (PersonDTO reader : readerList) {
+        for (PersonDTO reader : listReader) {
             // Kiểm tra từ khóa có tồn tại trong tên độc giả hoặc ID độc giả
             boolean matchesKeyword = keyword.isEmpty()
                     || reader.getName().toLowerCase().contains(keyword.toLowerCase())
@@ -182,7 +232,23 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         boolean isGiangVien = giangVienCheckBox.isSelected(); // Kiểm tra trạng thái "Giảng viên"
         searchReaderData(readerTable, keyword, isSinhVien, isGiangVien);
 }
-
+    
+    private void search(){
+        String keyword = txtFindReader.getText().trim();
+        Vector<String> role = new Vector<String>();
+        if (sinhVienCheckBox.isSelected()){
+            role.add("SV");
+        }
+        if (giangVienCheckBox.isSelected()){
+            role.add("GV");
+        }
+        try {
+            listReader = personBus.searchAllPerson(keyword, role, true);
+            setUpTable();
+        } catch (Exception ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     
     /**
@@ -196,7 +262,7 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        readerDetail1 = new GUI.ReaderDetail();
+        readerDetail1 = new GUI.ReaderDetail(this);
         panelBorder1 = new MyDesign.PanelBorder();
         jLabel1 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -302,11 +368,6 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
 
         myButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/add.png"))); // NOI18N
         myButton1.setText("Thêm");
-        myButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                myButton1ActionPerformed(evt);
-            }
-        });
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("DANH SÁCH ĐỘC GIẢ");
@@ -541,28 +602,18 @@ public class ReaderGUI extends javax.swing.JPanel implements BarcodeListener {
         jPanel2.setVisible(false);
     }//GEN-LAST:event_giangvienRadioButtonActionPerformed
 
-    private void myButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_myButton1ActionPerformed
-
     private void txtFindReaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindReaderActionPerformed
-
-        
-        String text = txtFindReader.getText().trim();
-        try {
-              performReaderSearch();
-        } catch (Exception e1) {
-            // TODO Auto-generated catch block
-            JOptionPane.showMessageDialog(null,e1.getMessage());
-        }
+        search();
     }//GEN-LAST:event_txtFindReaderActionPerformed
 
     private void sinhVienCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sinhVienCheckBoxActionPerformed
         // TODO add your handling code here:
+        search();
     }//GEN-LAST:event_sinhVienCheckBoxActionPerformed
 
     private void giangVienCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_giangVienCheckBoxActionPerformed
         // TODO add your handling code here:
+        search();
     }//GEN-LAST:event_giangVienCheckBoxActionPerformed
 
 

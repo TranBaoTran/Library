@@ -4,48 +4,52 @@
  */
 package GUI;
 
+import BUS.BorrowBUS;
+import BUS.BorrowDetailBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author User
  */
 public class ReaderHistoryDialog extends javax.swing.JDialog {
-
+    List<BorrowDTO> borrow;
+    BorrowBUS borrowBUS;
+    BorrowDetailBUS borrowDetailBUS;
     /**
      * Creates new form ReaderHistoryDialog
      */
     public ReaderHistoryDialog(java.awt.Frame parent, boolean modal, String id) {
         super(parent, modal);
         initComponents();
-        Vector<BorrowDetailDTO> borrowDetails = new Vector<>();
-        setAlwaysOnTop(true);
-        setLocationRelativeTo(null);
-        BorrowDetailDTO detail1 = new BorrowDetailDTO("978-0-123456-47-2", "Book One", "First book description", 5, 1, 0);
-        BorrowDetailDTO detail2 = new BorrowDetailDTO("978-0-987654-32-1", "Book Two", "Second book description", 3, 0, 1);
-        borrowDetails.add(detail1);
-        borrowDetails.add(detail2);
-
-        // Create a BorrowDTO object
-        BorrowDTO borrowDTO = new BorrowDTO(
-                101,                  // ID
-                "SV10001",                 // Reader ID
-                "John Doe",           // Reader Name
-                "staff",                 // Staff ID
-                "Jane Smith",         // Staff Name
-                LocalDate.of(2024, 10, 1),   // Borrow Date
-                LocalDate.of(2024, 10, 30),  // Due Date
-                null,                 // Return Date (null if not returned yet)
-                false,                // Delay status (false = no delay)
-                0,                    // Fine amount (no fine in this case)
-                false,                 // Is Active (true = currently active)
-                borrowDetails         // List of BorrowDetailDTO
-        );
-        borrowReceipt.setBorrowDTO(borrowDTO);
-        borrowReceipt.showBorrowReceipt();
+        try {
+            borrowBUS = new BorrowBUS();
+            borrowDetailBUS = new BorrowDetailBUS();
+            borrow = borrowBUS.selectByUserId(id);
+            for (BorrowDTO b : borrow){
+                b.setBorrowDetailDTO(borrowDetailBUS.getBorrowDetails(b.getId()));
+            }
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
+            Logger.getLogger(ReaderHistoryDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        setUpTable();
+    }
+    
+    private void setUpTable(){
+        tbPhieuMuon.setRowCount(0);
+        int i = 1;
+        for (BorrowDTO b : borrow){
+            Object row[] = {i++, b.getBorrowDate(), b.getBorrowDetailDTO().size(), b.getStaffName()};
+            tbPhieuMuon.addRow(row);
+        }
     }
 
     /**
@@ -63,9 +67,6 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         spTable = new javax.swing.JScrollPane();
         tbPhieuMuon = new MyDesign.MyTable();
-        panelBorder_Basic2 = new MyDesign.PanelBorder_Basic();
-        jLabel8 = new javax.swing.JLabel();
-        txtTimKiem = new MyDesign.SearchText();
         borrowReceipt = new GUI.BorrowReceipt();
         jLabel3 = new javax.swing.JLabel();
 
@@ -93,30 +94,12 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        tbPhieuMuon.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbPhieuMuonMouseClicked(evt);
+            }
+        });
         spTable.setViewportView(tbPhieuMuon);
-
-        javax.swing.GroupLayout panelBorder_Basic2Layout = new javax.swing.GroupLayout(panelBorder_Basic2);
-        panelBorder_Basic2.setLayout(panelBorder_Basic2Layout);
-        panelBorder_Basic2Layout.setHorizontalGroup(
-            panelBorder_Basic2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder_Basic2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(txtTimKiem, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        panelBorder_Basic2Layout.setVerticalGroup(
-            panelBorder_Basic2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBorder_Basic2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(panelBorder_Basic2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelBorder_Basic2Layout.createSequentialGroup()
-                        .addComponent(txtTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
 
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
@@ -125,26 +108,16 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
             .addGroup(panelBorder1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(panelBorder_Basic2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addComponent(spTable, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(jLabel5)
+                    .addComponent(spTable, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelBorder1Layout.setVerticalGroup(
             panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(jLabel5))
-                    .addGroup(panelBorder1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(panelBorder_Basic2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(13, 13, 13)
+                .addComponent(jLabel5)
+                .addGap(16, 16, 16)
                 .addComponent(spTable, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -157,7 +130,7 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(panelBorder1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(borrowReceipt, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .addComponent(borrowReceipt, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
                 .addContainerGap())
         );
         panelBorder_Basic1Layout.setVerticalGroup(
@@ -210,6 +183,19 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void tbPhieuMuonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbPhieuMuonMouseClicked
+        // TODO add your handling code here:
+        int row = tbPhieuMuon.getSelectedRow();
+        if (row >= 0) {
+            borrowReceipt.setBorrowDTO(borrow.get(row));
+            for (BorrowDetailDTO u : borrow.get(row).getBorrowDetailDTO()){
+                System.out.println(u.getBookName()+ " " + u.getQuantity());
+            }
+            borrowReceipt.showBorrowReceipt();
+            borrowReceipt.setFromHistory();
+        }
+    }//GEN-LAST:event_tbPhieuMuonMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -256,13 +242,10 @@ public class ReaderHistoryDialog extends javax.swing.JDialog {
     private GUI.BorrowReceipt borrowReceipt;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel8;
     private MyDesign.PanelBorder panelBorder1;
     private MyDesign.PanelBorder_Basic panelBorder_Basic1;
-    private MyDesign.PanelBorder_Basic panelBorder_Basic2;
     private MyDesign.PanelBorder_Statistic_Blue panelBorder_Statistic_Blue1;
     private javax.swing.JScrollPane spTable;
     private MyDesign.MyTable tbPhieuMuon;
-    private MyDesign.SearchText txtTimKiem;
     // End of variables declaration//GEN-END:variables
 }

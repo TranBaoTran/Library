@@ -14,11 +14,13 @@ import javax.swing.JOptionPane;
  */
 public class ReaderDetail extends javax.swing.JPanel {
     private PersonDTO personDTO;
+    private ReaderGUI parentGUI;
     /**
      * Creates new form ReaderDetail
      */
-    public ReaderDetail() {
+    public ReaderDetail(ReaderGUI parentGUI) {
         initComponents();
+        this.parentGUI = parentGUI;
 //        showReaderDetail(); //cái này lúc code nhớ bật
     }
     
@@ -27,7 +29,6 @@ public class ReaderDetail extends javax.swing.JPanel {
             panelBorder1.setVisible(false);
         }else{    
             panelBorder1.setVisible(true);
-            setValue(); //Mấy cái cá nhân nhét hết vô hàm này
             loadValueReader(personDTO);
         }
     }
@@ -37,7 +38,7 @@ public class ReaderDetail extends javax.swing.JPanel {
     }
     
     public void setValue(){
-        if (personDTO.getRoleID().equals("GV")){
+        if (personDTO.getRoleID().getId().equals("GV")){
             jLabel6.setVisible(false);
             jLabel7.setVisible(false);
             startYearLabel.setVisible(false);
@@ -63,6 +64,7 @@ public class ReaderDetail extends javax.swing.JPanel {
             startYearLabel.setText(element[0]);
             endYearLabel.setText(element[1]);
         }
+        setValue();
     }
 
     /**
@@ -292,6 +294,14 @@ public class ReaderDetail extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
             return;
         }
+        if (!newName.matches("^[\\p{L}\\s]+$")){
+            JOptionPane.showMessageDialog(this, "Tên không hợp lệ!");
+            return;
+        }
+        if (!newTel.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+            return;
+        }
 
         personDTO.setName(newName);
         personDTO.setTel(newTel);
@@ -300,13 +310,10 @@ public class ReaderDetail extends javax.swing.JPanel {
         boolean isUpdated = new PersonBUS().updatePerson(personDTO); // Gọi BUS để cập nhật
         if (isUpdated) {
             JOptionPane.showMessageDialog(this, "Cập nhật thông tin độc giả thành công!");
+            this.parentGUI.refreshReaderTable();
         } else {
             JOptionPane.showMessageDialog(this, "Cập nhật thông tin thất bại!");
-        }
-        if (isUpdated) {
-        JOptionPane.showMessageDialog(this, "Cập nhật thông tin độc giả thành công!");
-        ((ReaderGUI) this.getParent()).refreshReaderTable(); // Gọi làm mới từ GUI cha
-        }
+        }    
     }//GEN-LAST:event_editBookButtonActionPerformed
 
     private void deleteBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBookButton1ActionPerformed
@@ -325,19 +332,16 @@ public class ReaderDetail extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
                 personDTO = null; // Xóa thông tin đang hiển thị
                 showReaderDetail();
+                this.parentGUI.refreshReaderTable();
             } else {
                 JOptionPane.showMessageDialog(this, "Xóa độc giả thất bại!");
             }
-        }
-        if (isDeleted) {
-        JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
-        ((ReaderGUI) this.getParent()).refreshReaderTable();
         }
     }//GEN-LAST:event_deleteBookButton1ActionPerformed
 
     private void jLabel9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel9MouseClicked
         // TODO add your handling code here:
-        ReaderHistoryDialog whid=new ReaderHistoryDialog(new javax.swing.JFrame(), true, "");
+        ReaderHistoryDialog whid=new ReaderHistoryDialog(new javax.swing.JFrame(), true, this.personDTO.getId());
         whid.setVisible(true);
     }//GEN-LAST:event_jLabel9MouseClicked
 

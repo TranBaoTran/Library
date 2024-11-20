@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Vector;
 /**
  *
  * @author User
@@ -23,38 +24,206 @@ public class PersonDAO {
     public PersonDAO() {
         this.connectDB =  new ConnectDB();
     }
+    
+    public boolean isPersonIdExist(String id) throws SQLException{
+        boolean flag = false;
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = "SELECT * FROM person WHERE id = ?";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setString(1, id);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   flag = true;
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
+    }
+    
+    public boolean isPersonPhoneExist(String phone) throws SQLException{
+        boolean flag = false;
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String sql = "SELECT * FROM person WHERE tel = ? AND isActive = 1";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setString(1, phone);
+                ResultSet rs = stmt.executeQuery();
+          
+                while(rs.next()) {
+                   flag = true;
+                }
+                 
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
+    }
 
     public boolean addPerson(PersonDTO person) throws SQLException {
+        boolean flag = false;
         connectDB.connect();
-        String query = "INSERT INTO Person (id, name, tel, address, schoolYear) VALUES (?, ?, ?, ?, ?)";
-        PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
-        stmt.setString(1, person.getId());
-        stmt.setString(2, person.getName());
-        stmt.setString(3, person.getTel());
-        stmt.setString(4, person.getAddress());
-        stmt.setString(5, person.getSchoolYear());
-        return stmt.executeUpdate() > 0;
+        if (ConnectDB.conn != null){
+            try{
+                ConnectDB.conn.setAutoCommit(false); 
+                String query = "INSERT INTO Person (id, name, tel, address, schoolYear) VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+                stmt.setString(1, person.getId());
+                stmt.setString(2, person.getName());
+                stmt.setString(3, person.getTel());
+                stmt.setString(4, person.getAddress());
+                stmt.setString(5, person.getSchoolYear());
+                int rowsUpdated = stmt.executeUpdate();
+                if (rowsUpdated > 0){
+                  query = "INSERT INTO account (id, password, positionID) VALUES (?, ?, ?)";  
+                  PreparedStatement stmt2 = connectDB.getConnection().prepareStatement(query);
+                  stmt2.setString(1, person.getId());
+                  stmt2.setString(2, "$2a$12$K3UiKrxSiYeApq.JruF.iu5w9EFq0ptPH845afQdEWk5edNrld5BS");
+                  stmt2.setString(3, person.getRoleID().getId());
+                  int rowsUpdated2 = stmt2.executeUpdate();
+                  if (rowsUpdated2 > 0){
+                      ConnectDB.conn.commit();
+                        flag = true;
+                  }    
+                }
+            }catch (SQLException e) {
+                try {
+                    ConnectDB.conn.rollback(); 
+                } catch (SQLException rollbackException) {
+                    rollbackException.printStackTrace();
+                }
+                e.printStackTrace();
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
     }
 
     public boolean updatePerson(PersonDTO person) throws SQLException {
+        boolean flag = false;
         connectDB.connect();
-        String query = "UPDATE Person SET name = ?, tel = ?, address = ?, schoolYear = ? WHERE id = ?";
-        PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
-        stmt.setString(1, person.getName());
-        stmt.setString(2, person.getTel());
-        stmt.setString(3, person.getAddress());
-        stmt.setString(4, person.getSchoolYear());
-        stmt.setString(5, person.getId());
-        return stmt.executeUpdate() > 0;
+        if (ConnectDB.conn != null){
+            try{
+                String query = "UPDATE Person SET name = ?, tel = ?, address = ?, schoolYear = ? WHERE id = ?";
+                PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+                stmt.setString(1, person.getName());
+                stmt.setString(2, person.getTel());
+                stmt.setString(3, person.getAddress());
+                stmt.setString(4, person.getSchoolYear());
+                stmt.setString(5, person.getId());
+                int rowsUpdated = stmt.executeUpdate();
+                if (rowsUpdated > 0){
+                  flag = true;   
+                }
+            }catch (SQLException e) {
+                e.printStackTrace();
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
     }
     
     public boolean deletePerson(String id) throws SQLException {
+        boolean flag = false;
         connectDB.connect();
-        String query = "DELETE FROM Person WHERE id = ?";
-        PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
-        stmt.setString(1, id);
-        return stmt.executeUpdate() > 0;
+        if (ConnectDB.conn != null){
+            try{
+                String query = "UPDATE Person SET isActive = 0 WHERE id = ?";
+                PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+                stmt.setString(1, id);
+                int rowsUpdated = stmt.executeUpdate();
+                if (rowsUpdated > 0){
+                  flag = true;   
+                }
+            }catch (SQLException e) {
+                e.printStackTrace();
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
     }
+    
+    public List<PersonDTO> searchAllPerson(String searchText, Vector<String> role, boolean isReader) throws SQLException {
+    List<PersonDTO> readerList = new ArrayList<>();
+    try {
+        connectDB.connect();
+
+        // If no roles are provided, assign default roles based on isReader
+        if (role == null || role.isEmpty()) {
+            role = new Vector<>();
+            if(isReader){
+                role.add("SV");
+                role.add("GV");
+            }    
+        }
+
+        StringBuilder rolePlaceholders = new StringBuilder();
+        for (int i = 0; i < role.size(); i++) {
+            if (i > 0) {
+                rolePlaceholders.append(", ");
+            }
+            rolePlaceholders.append("?");
+        }
+
+        String query = "SELECT person.*, account.positionID FROM person " +
+                       "INNER JOIN account ON person.id = account.id " +
+                       "WHERE person.isActive = 1 AND account.positionID IN (" + rolePlaceholders + ")";
+
+        if (searchText != null && !searchText.isEmpty()) {
+            query += " AND (person.name LIKE ? OR person.tel LIKE ?)";
+        }
+
+        System.out.println(query);
+        
+        try (PreparedStatement pstmt = connectDB.getConnection().prepareStatement(query)) {
+            // Set role parameters
+            int index = 1;
+            for (String roleValue : role) {
+                pstmt.setString(index++, roleValue);
+            }
+
+            // Set search text parameters if applicable
+            if (searchText != null && !searchText.isEmpty()) {
+                String searchPattern = "%" + searchText + "%";
+                pstmt.setString(index++, searchPattern);
+                pstmt.setString(index++, searchPattern);
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                RoleDTO roleDTO = new RoleDTO(rs.getString("positionID"), null);
+                readerList.add(new PersonDTO(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    rs.getString("tel"),
+                    rs.getString("address"),
+                    rs.getString("schoolYear"),
+                    roleDTO
+                ));
+            }
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connectDB.disconnect();
+        }
+
+        return readerList;
+    }
+
     
     public ArrayList<PersonDTO> searchPerson(String keyword) throws SQLException {
         connectDB.connect();
@@ -106,7 +275,7 @@ public class PersonDAO {
             connectDB.connect();
             String query = "SELECT person.*, account.positionID FROM person\n" +
                             "INNER JOIN account ON person.id = account.id\n" +
-                            "WHERE account.positionID IN ('SV', 'GV')";
+                            "WHERE account.positionID IN ('SV', 'GV') AND person.isActive = 1";
             Statement stmt = connectDB.getConnection().createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
@@ -123,6 +292,8 @@ public class PersonDAO {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            connectDB.disconnect();
         }
         return readerList;
     }

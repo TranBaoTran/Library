@@ -161,6 +161,11 @@ public class BorrowReceipt extends javax.swing.JPanel {
             setBorrowReceipt();
         }
     }
+    
+    public void setFromHistory(){
+        delayReturnButton.setVisible(false);
+        returnButton.setVisible(false);
+    }
 
     private void setBorrowReceipt() {
         jPanel1.setVisible(true);
@@ -342,7 +347,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
                 bookGBC.gridx = 1;
                 bookGBC.gridy = count;
                 bookGBC.anchor = GridBagConstraints.EAST;
-                bookContainer.add(new MyLabel(String.valueOf(bdDTO.getLost())), bookGBC);
+                bookContainer.add(new MyLabel(String.valueOf(bdDTO.getBroke())), bookGBC);
             }
 
             count++;

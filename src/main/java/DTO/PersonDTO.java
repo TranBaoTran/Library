@@ -22,7 +22,6 @@ public class PersonDTO {
         this.tel = tel;
         this.address = address;
         this.schoolYear = schoolYear;
-        this.roleDTO = roleDTO;
     }
 
     public PersonDTO(String id, String name, String tel, String address, String schoolYear, RoleDTO roleDTO) {

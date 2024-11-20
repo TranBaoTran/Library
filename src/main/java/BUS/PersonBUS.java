@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +33,10 @@ public class PersonBUS {
         return personDAO.getAllReaders();
     }
     
+    public List<PersonDTO> searchAllPerson(String searchText, Vector<String> role, boolean isReader) throws Exception {
+        return personDAO.searchAllPerson(searchText, role, isReader);
+    }
+    
     public PersonDTO getPersonById(String id){
         try {
             return personDAO.getPersonById(id);
@@ -47,6 +52,14 @@ public class PersonBUS {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public boolean isPersonIdExist(String id) throws SQLException{
+        return personDAO.isPersonIdExist(id);
+    }
+    
+    public boolean isPersonPhoneExist(String phone) throws SQLException{
+        return personDAO.isPersonPhoneExist(phone);
     }
 
     public boolean updatePerson(PersonDTO person) {

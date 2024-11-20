@@ -64,6 +64,10 @@
       </Layout>
       <SubComponents>
         <Component class="GUI.ReaderDetail" name="readerDetail1">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new GUI.ReaderDetail(this)"/>
+            <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="ReaderGUI_readerDetail1"/>
+          </AuxValues>
         </Component>
         <Container class="MyDesign.PanelBorder" name="panelBorder1">
 
@@ -341,9 +345,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Th&#xea;m"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="myButton1ActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>

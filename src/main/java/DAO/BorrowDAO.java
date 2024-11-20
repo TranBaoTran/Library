@@ -99,7 +99,10 @@ public class BorrowDAO {
                 String readerId = rs.getString("readerID");
                 borrow.setReaderID(readerId);
                 borrow.setReaderName(getPersonName(readerId));
-                borrow.setStaffID(rs.getString("borrowStaffID"));
+                String staffId = rs.getString("borrowStaffID");
+                borrow.setStaffID(staffId);
+                borrow.setStaffName(getPersonName(staffId));
+
 
                 // Parse dates
                 String borrowDateStr = rs.getString("borrowDate");
