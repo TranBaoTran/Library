@@ -58,7 +58,7 @@ public class BookGUI extends javax.swing.JPanel {
         
         updateTable();
         searchCondition = new HashMap<>();
-
+        clickBook();
         loadAuthorData();
         loadCategoryData();
         loadNXBData();
@@ -107,6 +107,7 @@ public class BookGUI extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         bookDetail = new GUI.BookDetail();
         editBookButton1 = new MyDesign.MyButton();
+        editBookButton2 = new MyDesign.MyButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -115,16 +116,6 @@ public class BookGUI extends javax.swing.JPanel {
         txtFindByISBN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtFindByISBNActionPerformed(evt);
-            }
-        });
-
-        // Click button tìm kiếm
-        btFind.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFindByISBNActionPerformed(evt);
-                txtFindByNameActionPerformed(evt);
-                txtFindByISBN1ActionPerformed(evt);
-                cbAuthorCategoryPublisherActionPerformed(evt);
             }
         });
 
@@ -226,30 +217,35 @@ public class BookGUI extends javax.swing.JPanel {
         jLabel4.setText("Thể loại");
 
         cbAuthor.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
         cbAuthor.setBorder(null);
         cbAuthor.setOpaque(true);
         cbAuthor.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbAuthor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tác giả" }));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setText("Tác giả");
 
         cbCategory.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbCategory.setBorder(null);
         cbCategory.setOpaque(true);
         cbCategory.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel6.setText("NXB");
 
         cbPublisher.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
+        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Thể loại" }));
         cbPublisher.setBorder(null);
         cbPublisher.setOpaque(true);
         cbPublisher.setPreferredSize(new java.awt.Dimension(77, 28));
-        cbPublisher.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nhà xuất bản" }));
 
         btFind.setText("Tìm kiếm");
+        btFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btFindActionPerformed(evt);
+            }
+        });
 
         myTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -270,10 +266,6 @@ public class BookGUI extends javax.swing.JPanel {
                 return canEdit [columnIndex];
             }
         });
-
-        // Khi click vào 1 sách bất kỳ
-        clickBook();
-
         jScrollPane2.setViewportView(myTable1);
         if (myTable1.getColumnModel().getColumnCount() > 0) {
             myTable1.getColumnModel().getColumn(0).setResizable(false);
@@ -382,13 +374,17 @@ public class BookGUI extends javax.swing.JPanel {
         editBookButton1.setColor(new java.awt.Color(255, 241, 241));
         editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
         editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-
-        // Khi nhấn vào button xóa sách
         editBookButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmDelete();
+                editBookButton1ActionPerformed(evt);
             }
         });
+
+        editBookButton2.setBackground(new java.awt.Color(210, 223, 255));
+        editBookButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/4.png"))); // NOI18N
+        editBookButton2.setText("Sắp xếp sách");
+        editBookButton2.setColorOver(new java.awt.Color(255, 241, 241));
+        editBookButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -404,7 +400,9 @@ public class BookGUI extends javax.swing.JPanel {
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(122, 122, 122))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(editBookButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(52, 52, 52))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -413,8 +411,11 @@ public class BookGUI extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 495, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
-                        .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(editBookButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 3, Short.MAX_VALUE))
                     .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -434,6 +435,19 @@ public class BookGUI extends javax.swing.JPanel {
         String text = txtFindByISBN1.getText().trim();
         searchCondition.put("v.edition", text);
     }//GEN-LAST:event_txtFindByISBN1ActionPerformed
+
+    private void btFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFindActionPerformed
+        // TODO add your handling code here:
+        txtFindByISBNActionPerformed(evt);
+        txtFindByNameActionPerformed(evt);
+        txtFindByISBN1ActionPerformed(evt);
+        cbAuthorCategoryPublisherActionPerformed(evt);
+    }//GEN-LAST:event_btFindActionPerformed
+
+    private void editBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButton1ActionPerformed
+        // TODO add your handling code here:
+        confirmDelete();
+    }//GEN-LAST:event_editBookButton1ActionPerformed
 
     private void cbAuthorCategoryPublisherActionPerformed(java.awt.event.ActionEvent evt) {
         String authorSelectedText = cbAuthor.getSelectedItem().toString();
@@ -591,6 +605,7 @@ public class BookGUI extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> cbCategory;
     private javax.swing.JComboBox<String> cbPublisher;
     private MyDesign.MyButton editBookButton1;
+    private MyDesign.MyButton editBookButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
