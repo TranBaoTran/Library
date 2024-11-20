@@ -431,7 +431,7 @@ public class BorrowDAO {
 
                     for (BorrowDetailDTO tempBorrowDetail : tempBorrowDetails) {
                         String query = "INSERT INTO `borrowdetail`(`borrowID`, `ISBN`, `quantity`, `description`) VALUES (?, ?, ?, ?)";
-                        try (PreparedStatement stmt = connectDB.getConnection().prepareStatement(query)) {
+                        try (PreparedStatement stmt = ConnectDB.conn.prepareStatement(query)) {
                             stmt.setInt(1, generatedID);
                             stmt.setString(2, tempBorrowDetail.getISBN());
                             stmt.setInt(3, tempBorrowDetail.getQuantity());
@@ -439,13 +439,12 @@ public class BorrowDAO {
                             stmt.executeUpdate();
                         }
                         
-                        String updateQuery = "UPDATE `borrowdetail` SET `quantity` = ? WHERE ISBN = ? AND borrowID = ?";
-                        try (PreparedStatement updateStatement = connectDB.getConnection().prepareStatement(updateQuery)) {
-                            updateStatement.setInt(1, tempBorrowDetail.getQuantity());
-                            updateStatement.setString(2, tempBorrowDetail.getISBN());
-                            updateStatement.setInt(3, tempBorrowDetail.getBorrowID());
-                            updateStatement.executeUpdate();
-                        }
+                       String updateQuery = "UPDATE `versionofbook` SET `available` = `available`- ? WHERE ISBN = ?";
+                       try (PreparedStatement updateStatement = ConnectDB.conn.prepareStatement(updateQuery)) {
+                           updateStatement.setInt(1, tempBorrowDetail.getQuantity());
+                           updateStatement.setString(2, tempBorrowDetail.getISBN());
+                           updateStatement.executeUpdate();
+                       }
                     }
 
                     ConnectDB.conn.commit();
