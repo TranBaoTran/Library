@@ -4,7 +4,16 @@
  */
 package GUI;
 
+import BUS.BookBUS;
 import DTO.BookDTO;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SpinnerNumberModel;
 
 /**
  *
@@ -12,13 +21,32 @@ import DTO.BookDTO;
  */
 public class setBookLocationDialog extends javax.swing.JDialog {
     BookDTO book;
+    BookBUS bookBUS;
     /**
      * Creates new form setBookLocationDialog
      */
-    public setBookLocationDialog(java.awt.Frame parent, boolean modal, BookDTO book) {
+    public setBookLocationDialog(java.awt.Frame parent, boolean modal, BookDTO book, Runnable onDisposeCallback) {
         super(parent, modal);
         initComponents();
+        setLocationRelativeTo(null);
         this.book = book;
+        SpinnerNumberModel model = new SpinnerNumberModel(1, 1, this.book.getQuantity(), 1);
+        availableSpinner.setModel(model);
+        
+        try {
+            bookBUS = new BookBUS();
+        } catch (ClassNotFoundException | SQLException | IOException ex) {
+            Logger.getLogger(setBookLocationDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if (onDisposeCallback != null) {
+                    onDisposeCallback.run();
+                }
+            }
+        });
     }
 
     /**
@@ -59,7 +87,6 @@ public class setBookLocationDialog extends javax.swing.JDialog {
         jLabel10.setText("Số lượng");
 
         availableSpinner.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        availableSpinner.setModel(new javax.swing.SpinnerNumberModel(1, 1, null, 1));
 
         changeLocationButton.setBackground(new java.awt.Color(22, 113, 221));
         changeLocationButton.setForeground(new java.awt.Color(255, 255, 255));
@@ -158,8 +185,17 @@ public class setBookLocationDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void changeLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeLocationButtonActionPerformed
-        // TODO add your handling code here:
-        
+        try {
+            // TODO add your handling code here:
+            String floor = floorComboBox.getSelectedItem().toString();
+            String shelf = shelfComboBox.getSelectedItem().toString();
+            if(bookBUS.arrangeBook(floor, shelf, (int) availableSpinner.getValue(), this.book.getISBN())){
+                JOptionPane.showMessageDialog(null, "Sắp xếp sách thành công");
+                dispose();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(setBookLocationDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_changeLocationButtonActionPerformed
 
     /**
