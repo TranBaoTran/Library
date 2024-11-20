@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +60,6 @@ public class BorrowReceipt extends javax.swing.JPanel {
     private Runnable updateTableCallback;
     private boolean isReader = false;
     BorrowBUS borrowBUS;
-    
 
     /**
      * Creates new form BorrowReceipt
@@ -67,43 +67,45 @@ public class BorrowReceipt extends javax.swing.JPanel {
     public BorrowReceipt() {
         try {
             this.borrowBUS = new BorrowBUS();
-        }catch (ClassNotFoundException | SQLException | IOException e) {
+        } catch (ClassNotFoundException | SQLException | IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         initComponents();
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        
+
         handleSetBorrow();
         setUpDetail();
         showBorrowReceipt();
+
         delayReturnButton.addActionListener(evt -> delayHandle());
 
         returnButton.addActionListener(evt -> returnBookHandle());
     }
-    
-    public void setIsReader(boolean flag){
+
+    public void setIsReader(boolean flag) {
         this.isReader = flag;
     }
 
-    private void handleSetBorrow(){
+    private void handleSetBorrow() {
         borrowDTO = new BorrowDTO();
         borrowDTO.setId(0);
         borrowDTO.setReaderName("");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate date = LocalDate.parse("01/01/1990", formatter);
-    
+
         borrowDTO.setDueDate(date);
         borrowDTO.setBorrowDate(date);
         borrowDTO.setStaffName("");
         borrowDTO.setFine(0);
         borrowDTO.setBorrowDetailDTO(new Vector<>());
-        
+
         showBorrowReceipt();
     }
-    
+
     private void delayHandle() {
         if (borrowBUS.checkReaderHasDelayed(borrowDTO.getId())) {
             JOptionPane.showMessageDialog(null, "Phiếu mượn đã gia hạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
@@ -118,11 +120,12 @@ public class BorrowReceipt extends javax.swing.JPanel {
                 } else {
                     JOptionPane.showMessageDialog(null, "Đã xảy ra lỗi");
                 }
-            }catch (ClassNotFoundException | SQLException | IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+            } catch (ClassNotFoundException | SQLException | IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(),
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }
     }
 
@@ -171,7 +174,6 @@ public class BorrowReceipt extends javax.swing.JPanel {
         } else {
             returnDateLb.setText(convertLocalDateToString(borrowDTO.getReturnDate()));
         }
-        fineLb.setText(String.valueOf(borrowDTO.getFine()));
         isReturn = borrowDTO.isIsActive();
         System.out.println(borrowDTO.isIsActive());
         if (!isReturn) {
@@ -184,6 +186,9 @@ public class BorrowReceipt extends javax.swing.JPanel {
             recieptDetail.setBackground(new java.awt.Color(242, 255, 244));
             delayReturnButton.setVisible(false);
             returnButton.setVisible(false);
+
+            
+            fineLb.setText(String.valueOf(borrowDTO.getFine()));
         } else {
             lbTrangThai.setText("Chưa trả");
             lbTrangThai.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/RedNode.png")));
@@ -194,11 +199,27 @@ public class BorrowReceipt extends javax.swing.JPanel {
             recieptDetail.setBackground(new java.awt.Color(255, 241, 241));
             delayReturnButton.setVisible(true);
             returnButton.setVisible(true);
+
+            fineLb.setText(""+lateFee());
         }
-        if (isReader){
+        if (isReader) {
             returnButton.setVisible(false);
         }
         setUpBook();
+    }
+
+    private long lateFee(){
+        long lateFee = 10000;
+        String dueDateText = dueDateLb.getText().trim();
+        LocalDate dueDate = LocalDate.parse(dueDateText, formatter);
+        LocalDate currentDate = LocalDate.now();
+        // Tính số ngày trễ
+        long numDaysLate = ChronoUnit.DAYS.between(dueDate, currentDate);
+        if (numDaysLate > 0) {
+            borrowDTO.setFine(numDaysLate*lateFee);
+            return borrowDTO.getFine();
+        }
+        return 0;
     }
 
     private String convertLocalDateToString(LocalDate localDate) {
@@ -239,7 +260,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
             bookGBC.gridy = count;
             bookGBC.anchor = GridBagConstraints.EAST;
             bookContainer.add(new MyLabel(bdDTO.getDescription()), bookGBC);
-            System.out.println("GUI.BorrowReceipt.setUpBook()"+ bdDTO.getDescription());
+            System.out.println("GUI.BorrowReceipt.setUpBook()" + bdDTO.getDescription());
             count++;
 
             bookGBC.gridx = 0;
@@ -410,7 +431,6 @@ public class BorrowReceipt extends javax.swing.JPanel {
         int brokenValue = (int) brokenSpinner.getValue();
         int lostValue = (int) lostSpinner.getValue();
         int total = brokenValue + lostValue;
-
         // Cập nhật giá trị cho bdDTO
         bdDTO.setLost(lostValue);
         bdDTO.setBroke(brokenValue);
@@ -437,19 +457,20 @@ public class BorrowReceipt extends javax.swing.JPanel {
     }
 
     private double calculateFineForBrokenItems() {
-        double totalFine = 0;
+        double totalFine = borrowDTO.getFine();
         double finePerBrokenItem = 30000; // phạt 30.000đ cho mỗi quyển sách hỏng
 
         for (BorrowDetailDTO tempBorrowDetail : borrowDTO.getBorrowDetailDTO()) {
             try {
                 totalFine += tempBorrowDetail.getBroke() * finePerBrokenItem;
-                
+
                 double bookPrice = new BorrowBUS().selectPrice(tempBorrowDetail.getISBN());
                 totalFine += tempBorrowDetail.getLost() * bookPrice;
             } catch (ClassNotFoundException | SQLException | IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-            return 0;
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error initializing database connection: " + e.getMessage(),
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+                return 0;
             }
         }
         return totalFine;
@@ -460,17 +481,10 @@ public class BorrowReceipt extends javax.swing.JPanel {
         listeners.add(listener);
     }
 
-    // Phương thức để gọi khi trả sách thành công
-    private void notifyBookReturned() {
-        for (BorrowListener listener : listeners) {
-            listener.onBookReturned(); // Thông báo cho tất cả các listener
-        }
-    }
-
     public void setUpdateTableCallback(Runnable updateTableCallback) {
         this.updateTableCallback = updateTableCallback;
     }
-    
+
     private void notifyTableUpdate() {
         if (updateTableCallback != null) {
             updateTableCallback.run();
