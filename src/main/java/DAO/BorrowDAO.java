@@ -81,6 +81,53 @@ public class BorrowDAO {
         }
         return listBorrow;
     }
+    
+    public List<BorrowDTO> selectByUserId(String id) throws SQLException{
+        List<BorrowDTO> listBorrow = new ArrayList<>();
+        String sql = "select * from borrowing where readerID = ?";
+
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+        try{ 
+             PreparedStatement ps = ConnectDB.conn.prepareStatement(sql);
+             ps.setString(1, id);
+             ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                BorrowDTO borrow = new BorrowDTO();
+                borrow.setId(Integer.parseInt(rs.getString("id")));
+                String readerId = rs.getString("readerID");
+                borrow.setReaderID(readerId);
+                borrow.setReaderName(getPersonName(readerId));
+                borrow.setStaffID(rs.getString("borrowStaffID"));
+
+                // Parse dates
+                String borrowDateStr = rs.getString("borrowDate");
+                if (borrowDateStr != null && !borrowDateStr.isEmpty()) {
+                    borrow.setBorrowDate(LocalDate.parse(borrowDateStr, DateTimeFormatter.ISO_LOCAL_DATE));
+                }
+                String dueDateStr = rs.getString("dueDate");
+                if (dueDateStr != null && !dueDateStr.isEmpty()) {
+                    borrow.setDueDate(LocalDate.parse(dueDateStr));
+                }
+                String returnDateStr = rs.getString("returnDate");
+                if (returnDateStr != null && !returnDateStr.isEmpty()) {
+                    borrow.setReturnDate(LocalDate.parse(returnDateStr));
+                }
+
+                borrow.setDelay("1".equals(rs.getString("delay")));
+                borrow.setFine(Long.parseLong(rs.getString("fine")));
+                borrow.setIsActive("1".equals(rs.getString("isActive")));
+
+                listBorrow.add(borrow);
+            }
+        }catch(SQLException e){
+        }finally {
+            connectDB.disconnect();
+        }
+        }
+        return listBorrow;
+    }
 
     public BorrowDTO selectABorrow(int id) throws SQLException {
         String sql = "SELECT * FROM borrowing WHERE id = ?";

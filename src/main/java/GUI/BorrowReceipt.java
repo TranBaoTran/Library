@@ -57,6 +57,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
     private List<BorrowListener> listeners = new ArrayList<>();
 
     private Runnable updateTableCallback;
+    private boolean isReader = false;
     BorrowBUS borrowBUS;
     
 
@@ -82,6 +83,10 @@ public class BorrowReceipt extends javax.swing.JPanel {
 
         returnButton.addActionListener(evt -> returnBookHandle());
     }
+    
+    public void setIsReader(boolean flag){
+        this.isReader = flag;
+    }
 
     private void handleSetBorrow(){
         borrowDTO = new BorrowDTO();
@@ -98,7 +103,7 @@ public class BorrowReceipt extends javax.swing.JPanel {
         
         showBorrowReceipt();
     }
-
+    
     private void delayHandle() {
         if (borrowBUS.checkReaderHasDelayed(borrowDTO.getId())) {
             JOptionPane.showMessageDialog(null, "Phiếu mượn đã gia hạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
@@ -190,7 +195,9 @@ public class BorrowReceipt extends javax.swing.JPanel {
             delayReturnButton.setVisible(true);
             returnButton.setVisible(true);
         }
-        System.out.println("GUI.BorrowReceipt.setBorrowReceipt()" + borrowDTO.getBorrowDetailDTO());
+        if (isReader){
+            returnButton.setVisible(false);
+        }
         setUpBook();
     }
 

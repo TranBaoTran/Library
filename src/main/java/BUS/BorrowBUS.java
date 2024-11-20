@@ -41,6 +41,10 @@ public class BorrowBUS {
     public List<BorrowDTO> sellectAll() throws SQLException {
         return borrowDao.selectAll();
     }
+    
+    public List<BorrowDTO> selectByUserId(String id) throws SQLException {
+        return borrowDao.selectByUserId(id);
+    }
 
     public BorrowDTO selectABorrow(int id) {
         try {

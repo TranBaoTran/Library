@@ -48,7 +48,7 @@ public class HomePage extends javax.swing.JFrame {
                         setForm(new BookGUI(account));
                         break;
                     case 1:
-                        setForm(new BorrowGUI());
+                        setForm(new BorrowGUI(account));
                         break;
                     case 2:
                         setForm(new ReaderGUI());
@@ -77,9 +77,18 @@ public class HomePage extends javax.swing.JFrame {
                         dia.setVisible(true);
                         break;
                     case 9:
-                        account = null;
-                        addLoginAccount();
-                        JOptionPane.showMessageDialog(null, "Bạn đã đăng xuất.");
+                        int response = JOptionPane.showConfirmDialog(
+                            null, 
+                            "Bạn có chắc muốn đăng xuất?", 
+                            "Đăng xuất", 
+                            JOptionPane.YES_NO_OPTION, 
+                            JOptionPane.QUESTION_MESSAGE
+                        );
+                        if (response == JOptionPane.YES_OPTION) {
+                            account = null;
+                            addLoginAccount();
+                            JOptionPane.showMessageDialog(null, "Bạn đã đăng xuất.");
+                        }
                         break;
                     default:
                         // Optionally handle other cases or do nothing
@@ -97,10 +106,37 @@ public class HomePage extends javax.swing.JFrame {
             
             switch(account.getRoleDTO().getId()){
                 case "SV":
+                    Menu.setMenuItemVisible(1, true);
+                    Menu.setMenuItemVisible(2, false);
+                    Menu.setMenuItemVisible(3, false);
+                    Menu.setMenuItemVisible(4, false);
+                    Menu.setMenuItemVisible(5, false);
+                    Menu.setMenuItemVisible(6, false);
+                    Menu.setMenuItemVisible(7, false);
+                    Menu.setMenuItemVisible(8, false);
+                    Menu.setMenuItemVisible(9, true);
                     break;
                 case "GV":
+                    Menu.setMenuItemVisible(1, true);
+                    Menu.setMenuItemVisible(2, false);
+                    Menu.setMenuItemVisible(3, false);
+                    Menu.setMenuItemVisible(4, false);
+                    Menu.setMenuItemVisible(5, false);
+                    Menu.setMenuItemVisible(6, false);
+                    Menu.setMenuItemVisible(7, false);
+                    Menu.setMenuItemVisible(8, false);
+                    Menu.setMenuItemVisible(9, true);
                     break;
                 case "TT":
+                    Menu.setMenuItemVisible(1, true);
+                    Menu.setMenuItemVisible(2, true);
+                    Menu.setMenuItemVisible(3, false);
+                    Menu.setMenuItemVisible(4, false);
+                    Menu.setMenuItemVisible(5, false);
+                    Menu.setMenuItemVisible(6, false);
+                    Menu.setMenuItemVisible(7, false);
+                    Menu.setMenuItemVisible(8, false);
+                    Menu.setMenuItemVisible(9, true);
                     break;
                 case "TK":
                     myButton1.setVisible(true);
