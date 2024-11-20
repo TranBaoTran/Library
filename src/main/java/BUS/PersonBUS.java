@@ -70,6 +70,15 @@ public class PersonBUS {
             return false;
         }
     }
+    
+    public boolean updateStaff(PersonDTO person) {
+        try {
+            return personDAO.updateStaff(person);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public boolean deletePerson(String id) {
         try {

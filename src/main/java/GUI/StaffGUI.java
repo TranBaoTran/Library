@@ -6,12 +6,16 @@ package GUI;
 
 import BUS.PersonBUS;
 import BUS.RoleBUS;
+import DTO.AccountDTO;
 import DTO.PersonDTO;
 import DTO.RoleDTO;
 import static connection.ConnectDB.conn;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -22,29 +26,32 @@ import javax.swing.table.DefaultTableModel;
 public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     Scanner_Dialog scannerDialog = new Scanner_Dialog();
     String idScan = "";
+    List<PersonDTO> staffList;
+    AccountDTO account;
     /**
      * Creates new form StaffGUI
      */
     private PersonBUS personBUS;
     private RoleBUS roleBUS;
-    public StaffGUI() {
+    public StaffGUI(AccountDTO account) {
         initComponents();
+        this.account = account;
         personBUS = new PersonBUS();
         loadStaffTable();
         ClickStaffTable();
     }
     
-    private void loadStaffTable() {
+    public AccountDTO getAcc(){
+        return account;
+    }
+    
+    public void loadStaffTable() {
     try {
-        List<PersonDTO> staffList = personBUS.getAllStaff();
+        staffList = personBUS.getAllStaff();
         DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
         model.setRowCount(0);
         for (PersonDTO staff : staffList) {
-            RoleDTO role = staff.getRoleID();
-                System.out.println("GUI.StaffGUI.loadStaffTable(): " + role.getId());
-                System.out.println("GUI.StaffGUI.loadStaffTable(): " + role.getId());
-            model.addRow(new Object[]{staff.getId(), staff.getName(), staff.getTel(),
-                role.getId().equals("SV") ? "Sinh viên" : "Giảng viên"});
+            model.addRow(new Object[]{staff.getId(), staff.getName(), staff.getTel(), staff.getRoleID().getName()});
         }
     } catch (Exception e) {
         JOptionPane.showMessageDialog(this, e.getMessage());
@@ -57,16 +64,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                 int selectedRow = staffTable.getSelectedRow();
                 System.out.println(".mouseClicked()");
                 if (selectedRow != -1) {
-                    String id = staffTable.getValueAt(selectedRow, 0).toString();
-                    String role = staffTable.getValueAt(selectedRow, 3).toString();
-                    System.out.println("id:" +id);
-                    PersonDTO person = personBUS.getPersonById(id);
-                    if(person==null){
-                        System.out.println(".mouseClicked()");
-                        return;
-                    }
-                    person.setRoleID(new RoleDTO(role, role.equals("SV") ? "Sinh viên" : "Giảng viên"));
-                    staffDetail1.setPersonDTO(person);
+                    staffDetail1.setPersonDTO(staffList.get(selectedRow));
                     staffDetail1.showStaffDetail();
                 }
             }
@@ -80,7 +78,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     }
     
     public void searchStaffData(javax.swing.JTable staffTable, String keyword) throws Exception {
-    List<PersonDTO> staffList = personBUS.getAllStaff(); // Lấy danh sách nhân viên từ BUS
+    staffList = personBUS.getAllStaff(); // Lấy danh sách nhân viên từ BUS
     DefaultTableModel model = (DefaultTableModel) staffTable.getModel();
     model.setRowCount(0); // Xóa dữ liệu bảng hiện tại
 
@@ -98,7 +96,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                 staff.getId(),
                 staff.getName(),
                 staff.getTel(),
-                staff.getRoleID().getId().equals("SV") ? "Sinh viên" : "Giảng viên",
+                staff.getRoleID().getName(),
                 staff.getAddress()
             };
             model.addRow(row);
@@ -141,7 +139,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         jScrollPane1 = new javax.swing.JScrollPane();
         staffTable = new MyDesign.MyTable();
         rolecombobox = new javax.swing.JComboBox<>();
-        staffDetail1 = new GUI.StaffDetail();
+        staffDetail1 = new GUI.StaffDetail(this);
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -168,7 +166,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         jLabel6.setText("Vai trò");
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel7.setText("Tên độc giả");
+        jLabel7.setText("Tên nhân viên");
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel8.setText("Số điện thoại");
@@ -250,7 +248,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         });
         jScrollPane1.setViewportView(staffTable);
 
-        rolecombobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sinh viên", "Giảng viên" }));
+        rolecombobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Quản lý", "Thủ kho", "Thủ thư" }));
         rolecombobox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rolecomboboxActionPerformed(evt);
@@ -282,10 +280,7 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                                         .addComponent(jLabel9)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelBorder1Layout.createSequentialGroup()
-                                        .addComponent(jLabel8)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(staffTelTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.LEADING)))
                             .addComponent(jLabel5)
                             .addGroup(panelBorder1Layout.createSequentialGroup()
                                 .addComponent(jLabel7)
@@ -296,7 +291,8 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
                                         .addComponent(staffIDTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(scanReaderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(staffAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(staffAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(staffTelTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGap(0, 30, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -373,14 +369,53 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
         String name = staffNameTextField.getText().trim();
         String tel = staffTelTextField.getText().trim();
         String address = staffAddressTextField.getText().trim();
-        String role = (String) rolecombobox.getSelectedItem();
-        
-        if (id.isEmpty() || name.isEmpty() || tel.isEmpty() || role == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Thông báo", JOptionPane.WARNING_MESSAGE);
-            return;
+        int r = rolecombobox.getSelectedIndex();
+        RoleDTO role;
+        switch(r){
+            case 0:
+                role = new RoleDTO("QL", "Quản lý");
+                break;
+            case 1:
+                role = new RoleDTO("TK", "Thủ kho");
+                break;
+            case 2:
+                role = new RoleDTO("TT", "Thủ thư");
+                break;
+            default:
+                role = new RoleDTO("QL", "Quản lý");
+                break;
         }
         
-        PersonDTO staff = new PersonDTO(id, name, tel, address, role);
+         if (id.equals("") || name.equals("") || tel.equals("") || address.equals("")){
+            JOptionPane.showMessageDialog(this, "Không được bỏ trống trường nào");
+            return;
+        }
+        if (!id.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Mã độc giả không hợp lệ");
+            return;
+        }
+        if (!name.matches("^[\\p{L}\\s]+$")){
+            JOptionPane.showMessageDialog(this, "Tên không hợp lệ!");
+            return;
+        }
+        if (!tel.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+            return;
+        }
+        try {
+            if (personBUS.isPersonIdExist(id)){
+                JOptionPane.showMessageDialog(this, "Mã số này đã tồn tại!");
+                return;
+            }
+            if (personBUS.isPersonPhoneExist(tel)){
+                JOptionPane.showMessageDialog(this, "Số điện thoại đã tồn tại!");
+                return;
+            } 
+        } catch (SQLException ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        PersonDTO staff = new PersonDTO(id, name, tel, address, "", role);
         if (personBUS.addPerson(staff)) {
             JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             loadStaffTable(); // Cập nhật lại bảng
@@ -392,6 +427,31 @@ public class StaffGUI extends javax.swing.JPanel implements BarcodeListener{
     }
     }//GEN-LAST:event_addButtonActionPerformed
 
+    private void search(){
+        String keyword = txtFindStaff.getText().trim();
+        Vector<String> role = new Vector<String>();
+        try {
+            staffList = personBUS.searchAllPerson(keyword, role, false);
+            setUpTable();
+        } catch (Exception ex) {
+            Logger.getLogger(ReaderGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void setUpTable(){
+        staffTable.setRowCount(0);
+            
+        for (PersonDTO staff : staffList) {
+             Object[] row = new Object[]{
+                staff.getId(),
+                staff.getName(),
+                staff.getTel(),
+                staff.getRoleID().getName(),
+                staff.getAddress()
+            };
+            staffTable.addRow(row);
+        }
+    }
     
     private void txtFindStaffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFindStaffActionPerformed
         String text = txtFindStaff.getText().trim();

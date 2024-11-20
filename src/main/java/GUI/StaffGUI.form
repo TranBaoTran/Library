@@ -73,11 +73,7 @@
                                           <EmptySpace max="32767" attributes="0"/>
                                           <Component id="addButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="staffTelTextField" min="-2" pref="141" max="-2" attributes="0"/>
-                                      </Group>
+                                      <Component id="jLabel8" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -92,6 +88,7 @@
                                           <Component id="scanReaderButton" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="staffAddressTextField" min="-2" pref="382" max="-2" attributes="0"/>
+                                      <Component id="staffTelTextField" alignment="0" min="-2" pref="141" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -190,7 +187,7 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Segoe UI" size="12" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="T&#xea;n &#x111;&#x1ed9;c gi&#x1ea3;"/>
+            <Property name="text" type="java.lang.String" value="T&#xea;n nh&#xe2;n vi&#xea;n"/>
           </Properties>
         </Component>
         <Component class="MyDesign.MyTextField_Basic" name="staffNameTextField">
@@ -336,9 +333,10 @@
         <Component class="javax.swing.JComboBox" name="rolecombobox">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="Sinh vi&#xea;n"/>
-                <StringItem index="1" value="Gi&#x1ea3;ng vi&#xea;n"/>
+              <StringArray count="3">
+                <StringItem index="0" value="Qu&#x1ea3;n l&#xfd;"/>
+                <StringItem index="1" value="Th&#x1ee7; kho"/>
+                <StringItem index="2" value="Th&#x1ee7; th&#x1b0;"/>
               </StringArray>
             </Property>
           </Properties>
@@ -352,6 +350,9 @@
       </SubComponents>
     </Container>
     <Component class="GUI.StaffDetail" name="staffDetail1">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new GUI.StaffDetail(this)"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

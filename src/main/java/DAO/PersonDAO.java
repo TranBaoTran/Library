@@ -134,6 +134,31 @@ public class PersonDAO {
         return flag;
     }
     
+    public boolean updateStaff(PersonDTO person) throws SQLException {
+        boolean flag = false;
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String query = "UPDATE person JOIN account ON person.id = account.id SET person.name = ?, tel = ?, address = ?, positionID = ? WHERE person.id = ?";
+                PreparedStatement stmt = connectDB.getConnection().prepareStatement(query);
+                stmt.setString(1, person.getName());
+                stmt.setString(2, person.getTel());
+                stmt.setString(3, person.getAddress());
+                stmt.setString(4, person.getRoleID().getId());
+                stmt.setString(5, person.getId());
+                int rowsUpdated = stmt.executeUpdate();
+                if (rowsUpdated > 0){
+                  flag = true;   
+                }
+            }catch (SQLException e) {
+                e.printStackTrace();
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
+    }
+    
     public boolean deletePerson(String id) throws SQLException {
         boolean flag = false;
         connectDB.connect();
@@ -166,7 +191,11 @@ public class PersonDAO {
             if(isReader){
                 role.add("SV");
                 role.add("GV");
-            }    
+            }else{
+                role.add("QL");
+                role.add("TK");
+                role.add("TT");
+            }  
         }
 
         StringBuilder rolePlaceholders = new StringBuilder();
@@ -248,15 +277,16 @@ public class PersonDAO {
     public List<PersonDTO> getAllStaff() throws SQLException {
         connectDB.connect();
 //        String query = "SELECT * FROM Person WHERE isActive = 1";
-        String query = "SELECT person.*, account.positionID FROM person\n" +
-                            "INNER JOIN account ON person.id = account.id\n" +
-                            "WHERE account.positionID IN ('SV', 'GV')";
+        String query = "SELECT person.*, account.positionID, role.name FROM person\n" +
+                            "JOIN account ON person.id = account.id\n" +
+                            "JOIN role ON account.positionID = role.id\n" +
+                            "WHERE account.positionID IN ('QL', 'TT', 'TK')";
         Statement stmt = connectDB.getConnection().createStatement();
         ResultSet rs = stmt.executeQuery(query);
 
         List<PersonDTO> staffList = new ArrayList<>();
         while (rs.next()) {
-            RoleDTO roleDTO = new RoleDTO(rs.getString("positionID"), null);
+            RoleDTO roleDTO = new RoleDTO(rs.getString("positionID"), rs.getString("role.name"));
             staffList.add(new PersonDTO(
                 rs.getString("id"),
                 rs.getString("name"),

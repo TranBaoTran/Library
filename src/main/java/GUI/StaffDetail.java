@@ -6,6 +6,7 @@ package GUI;
 
 import BUS.PersonBUS;
 import DTO.PersonDTO;
+import DTO.RoleDTO;
 import javax.swing.JOptionPane;
 
 /**
@@ -14,11 +15,13 @@ import javax.swing.JOptionPane;
  */
 public class StaffDetail extends javax.swing.JPanel {
     private PersonDTO personDTO;
+    StaffGUI staffGUI;
     /**
      * Creates new form StaffDetail
      */
-    public StaffDetail() {
+    public StaffDetail(StaffGUI staffGUI) {
         initComponents();
+        this.staffGUI = staffGUI;
     }
     
     public void showStaffDetail(){
@@ -41,7 +44,7 @@ public class StaffDetail extends javax.swing.JPanel {
     
     public void loadValueStaff(PersonDTO personDTO){
         staffIdLabel.setText(personDTO.getId());
-        roleComboBox.setSelectedItem(personDTO.getRoleID().getId().equals("SV") ? "Sinh viên" : "Giảng viên");
+        roleComboBox.setSelectedItem(personDTO.getRoleID().getName());
         readerNameTextField.setText(personDTO.getName());
         readerTelTextField.setText(personDTO.getTel());
         readerAddressTextField.setText(personDTO.getAddress());
@@ -120,7 +123,7 @@ public class StaffDetail extends javax.swing.JPanel {
             }
         });
 
-        roleComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sinh viên", "Giảng viên", " " }));
+        roleComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Quản lý", "Thủ kho", "Thủ thư" }));
         roleComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 roleComboBoxActionPerformed(evt);
@@ -220,52 +223,74 @@ public class StaffDetail extends javax.swing.JPanel {
         String newTel = readerTelTextField.getText();
         String newAddress = readerAddressTextField.getText();
 
-        if (newName.isEmpty() || newTel.isEmpty() || newAddress.isEmpty()) {
+         if (newName.isEmpty() || newTel.isEmpty() || newAddress.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
             return;
+        }
+        if (!newName.matches("^[\\p{L}\\s]+$")){
+            JOptionPane.showMessageDialog(this, "Tên không hợp lệ!");
+            return;
+        }
+        if (!newTel.matches("^\\d{10}$")){
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
+            return;
+        }
+        if(personDTO.getRoleID().getId().equals("QL")){
+            JOptionPane.showMessageDialog(this, "Không thể chỉnh sửa người có chức vụ này!");
+            return;
+        }
+        
+        int r = roleComboBox.getSelectedIndex();
+        switch(r){
+            case 0:
+                personDTO.setRoleID(new RoleDTO("QL", "Quản lý"));
+                break;
+            case 1:
+                personDTO.setRoleID(new RoleDTO("TK", "Thủ kho"));
+                break;
+            case 2:
+                personDTO.setRoleID(new RoleDTO("TT", "Thủ thư"));
+                break;
         }
 
         personDTO.setName(newName);
         personDTO.setTel(newTel);
         personDTO.setAddress(newAddress);
 
-        boolean isUpdated = new PersonBUS().updatePerson(personDTO); // Gọi BUS để cập nhật
+        boolean isUpdated = new PersonBUS().updateStaff(personDTO); // Gọi BUS để cập nhật
         if (isUpdated) {
             JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
+            staffGUI.loadStaffTable();
         } else {
             JOptionPane.showMessageDialog(this, "Cập nhật thông tin thất bại!");
         }
-        if (isUpdated) {
-        JOptionPane.showMessageDialog(this, "Cập nhật thông tin nhân viên thành công!");
-        ((StaffGUI) this.getParent()).refreshStaffTable(); // Gọi làm mới từ GUI cha
-        }
+        
     }//GEN-LAST:event_editStaffButtonActionPerformed
 
     private void deleteStaffButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteStaffButton1ActionPerformed
         // TODO add your handling code here:
-                if (personDTO == null) {
-        JOptionPane.showMessageDialog(this, "Không có thông tin độc giả để xóa!");
-        return;
+        if (personDTO == null) {
+            JOptionPane.showMessageDialog(this, "Không có thông tin độc giả để xóa!");
+            return;
         }
-
+        if(personDTO.getRoleID().getId().equals("QL")){
+            JOptionPane.showMessageDialog(this, "Không thể chỉnh sửa người có chức vụ này!");
+            return;
+        }
         int confirm = JOptionPane.showConfirmDialog(this, 
-            "Bạn có chắc chắn muốn xóa độc giả này?", 
+            "Bạn có chắc chắn muốn xóa nhân viên này?", 
             "Xác nhận", JOptionPane.YES_NO_OPTION);
         boolean isDeleted = new PersonBUS().deletePerson(personDTO.getId());
         if (confirm == JOptionPane.YES_OPTION) {
             if (isDeleted) {
-                JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
+                JOptionPane.showMessageDialog(this, "Xóa nhân viên thành công!");
                 personDTO = null; // Xóa thông tin đang hiển thị
                 showStaffDetail();
+                staffGUI.loadStaffTable();
             } else {
-                JOptionPane.showMessageDialog(this, "Xóa độc giả thất bại!");
+                JOptionPane.showMessageDialog(this, "Xóa nhân viên thất bại!");
             }
-        }
-        if (isDeleted) {
-        JOptionPane.showMessageDialog(this, "Xóa độc giả thành công!");
-        ((ReaderGUI) this.getParent()).refreshReaderTable();
-        }
-        
+        }   
     }//GEN-LAST:event_deleteStaffButton1ActionPerformed
 
     private void roleComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roleComboBoxActionPerformed
