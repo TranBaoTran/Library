@@ -59,6 +59,7 @@ public class BorrowGUI extends javax.swing.JPanel implements BarcodeListener {
             borrowReceipt1.setIsReader(true);
         }
         
+        borrowReceipt1.setUpdateTableCallback(() -> loadBorrowData(borrowReceiptTable));
         loadBorrowDetail(bookBorrowTable);
         loadBorrowData(borrowReceiptTable);
 
