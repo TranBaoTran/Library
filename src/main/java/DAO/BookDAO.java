@@ -729,7 +729,7 @@ public class BookDAO {
         String sql = generateGetAllBookSQL();
     
         // Tạo điều kiện tìm kiếm
-        StringBuilder conditionBuilder = new StringBuilder();
+        StringBuilder conditionBuilder = new StringBuilder(" WHERE 1=1");
         if (searchConditions != null && !searchConditions.isEmpty()) {
             for (Map.Entry<String, String> entry : searchConditions.entrySet()) {
                 if (conditionBuilder.length() > 0) {
@@ -742,7 +742,7 @@ public class BookDAO {
     
         // Nếu có điều kiện thì thêm vào câu SQL
         if (conditionBuilder.length() > 0) {
-            sql += " AND " + conditionBuilder.toString();
+            sql += conditionBuilder.toString();
         }
 
         System.out.println(sql);
@@ -863,5 +863,28 @@ public class BookDAO {
             }
         }
         return isDeleted; // Trả về trạng thái xóa
-    }    
+    }
+
+    public boolean arrangeBook(String floor, String shelf, int quantity, String ISBN) throws SQLException{
+        boolean flag = true;
+        connectDB.connect();
+        if (ConnectDB.conn != null){
+            try{
+                String location = floor + "-" + shelf;
+                String sql = "UPDATE versionofbook SET available = available + ?, quantity = quantity - ?, location = ? WHERE ISBN = ?";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);  
+                stmt.setInt(1, quantity);
+                stmt.setInt(2, quantity);
+                stmt.setString(3, location);
+                stmt.setString(4, ISBN);
+                if(stmt.executeUpdate()>0){
+                    flag=true;
+                }
+            }catch(SQLException e){
+            }finally {
+                connectDB.disconnect();
+            }
+        }
+        return flag;
+    }
 }

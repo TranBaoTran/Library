@@ -186,4 +186,8 @@ public class BookBUS {
         }
         return allBook;
     }
+    
+    public boolean arrangeBook(String floor, String shelf, int quantity, String ISBN) throws SQLException{
+        return bookDAO.arrangeBook(floor, shelf, quantity, ISBN);
+    }
 }
