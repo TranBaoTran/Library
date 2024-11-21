@@ -21,7 +21,7 @@ public class ReaderDetail extends javax.swing.JPanel {
     public ReaderDetail(ReaderGUI parentGUI) {
         initComponents();
         this.parentGUI = parentGUI;
-//        showReaderDetail(); //cái này lúc code nhớ bật
+        showReaderDetail();
     }
     
     public void showReaderDetail(){

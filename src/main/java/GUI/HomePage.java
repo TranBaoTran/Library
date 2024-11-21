@@ -169,8 +169,8 @@ public class HomePage extends javax.swing.JFrame {
                     Menu.setMenuItemVisible(4, true);
                     Menu.setMenuItemVisible(5, false);
                     Menu.setMenuItemVisible(6, false);
-                    Menu.setMenuItemVisible(7, true);
-                    Menu.setMenuItemVisible(8, false);
+                    Menu.setMenuItemVisible(7, false);
+                    Menu.setMenuItemVisible(8, true);
                     break;
             }
             

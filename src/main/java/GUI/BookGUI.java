@@ -52,7 +52,7 @@ public class BookGUI extends javax.swing.JPanel {
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         
         this.user = user;
-        if(user == null || user.getRoleDTO().getId().equals("SV") || user.getRoleDTO().getId().equals("GV") || user.getRoleDTO().getId().equals("TT")){
+        if(user == null || user.getRoleDTO().getId().equals("SV") || user.getRoleDTO().getId().equals("GV") || user.getRoleDTO().getId().equals("TT") || user.getRoleDTO().getId().equals("AD")){
             editBookButton1.setVisible(false);
             editBookLocationButton.setVisible(false);
         }

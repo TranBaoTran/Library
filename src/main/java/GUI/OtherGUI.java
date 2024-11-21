@@ -448,7 +448,6 @@ public class OtherGUI extends javax.swing.JPanel {
 //            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
             OtherBUS otherBUS = new OtherBUS();
             this.author = otherBUS.getAuthorById(id);
-            JOptionPane.showMessageDialog(null, "Author: " + this.author.getId() + ", " + this.author.getName());
         } else {
             JOptionPane.showMessageDialog(null, "No row selected!");
         }
@@ -476,7 +475,6 @@ public class OtherGUI extends javax.swing.JPanel {
 //            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
             OtherBUS otherBUS = new OtherBUS();
             this.category = otherBUS.getCategoryById(id);
-            JOptionPane.showMessageDialog(null, "Category: " + this.category.getId() + ", " + this.category.getName());
         } else {
             JOptionPane.showMessageDialog(null, "No row selected!");
         }
@@ -504,7 +502,6 @@ public class OtherGUI extends javax.swing.JPanel {
 //            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
             OtherBUS otherBUS = new OtherBUS();
             this.publisher = otherBUS.getPublisherById(id);
-            JOptionPane.showMessageDialog(null, "publisher: " + this.publisher.getId() + ", " + this.publisher.getName());
         } else {
             JOptionPane.showMessageDialog(null, "No row selected!");
         }
@@ -521,7 +518,6 @@ public class OtherGUI extends javax.swing.JPanel {
 //            JOptionPane.showMessageDialog(null, "Selected ID: " + id);
             OtherBUS otherBUS = new OtherBUS();
             this.supplier = otherBUS.getSupplierById(id);
-            JOptionPane.showMessageDialog(null, "supplier: " + this.supplier.getId() + ", " + this.supplier.getName()+ ", " + this.supplier.getAddress()+ ", " + this.supplier.getTel());
         } else {
             JOptionPane.showMessageDialog(null, "No row selected!");
         }

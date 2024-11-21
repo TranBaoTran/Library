@@ -22,6 +22,7 @@ public class StaffDetail extends javax.swing.JPanel {
     public StaffDetail(StaffGUI staffGUI) {
         initComponents();
         this.staffGUI = staffGUI;
+        showStaffDetail();
     }
     
     public void showStaffDetail(){
