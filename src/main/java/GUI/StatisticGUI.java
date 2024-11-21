@@ -4,6 +4,7 @@
  */
 package GUI;
 
+import BUS.BookBUS;
 import BUS.BorrowBUS;
 import DTO.BorrowDTO;
 import DTO.BorrowDetailDTO;
@@ -116,50 +117,61 @@ public class StatisticGUI extends javax.swing.JPanel {
         }
     }
     
-    public void displayBorrowDetail(List<BorrowDTO> borrows){
-        // Tạo một DefaultTableModel với các cột: "ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"
-        String[] columnNames = {"ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"};
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0); // 0 dòng ban đầu
+    public void displayBorrowDetail(List<BorrowDTO> borrows) throws SQLException, ClassNotFoundException {
+            try {
+            // Mã của bạn ở đây, ví dụ như:
+            // Tạo một DefaultTableModel với các cột: "ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"
+            String[] columnNames = {"ISBN", "Tên sách", "Phiên bản", "Số lượt mượn"};
+            DefaultTableModel model = new DefaultTableModel(columnNames, 0); // 0 dòng ban đầu
 
-        // Tạo một Map để lưu tổng số lượt mượn cho mỗi sách (theo ISBN)
-        Map<String, Integer> borrowCountMap = new HashMap<>();
-        Map<String, String> bookNameMap = new HashMap<>();
-        Map<String, String> descriptionMap = new HashMap<>();
+            // Tạo một Map để lưu tổng số lượt mượn cho mỗi sách (theo ISBN)
+            Map<String, Integer> borrowCountMap = new HashMap<>();
+            Map<String, String> bookNameMap = new HashMap<>();
+            BookBUS bookBUS = new BookBUS(); // Sử dụng BookBUS
 
-        // Duyệt qua danh sách BorrowDTO
-        for (BorrowDTO borrow : borrows) {
-            // Duyệt qua các chi tiết mượn (BorrowDetailDTO) của mỗi BorrowDTO
-            for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
-                String ISBN = detail.getISBN();
-                String bookName = detail.getBookName();
-                String description = detail.getDescription();
-                int quantity = detail.getQuantity();
+            // Duyệt qua danh sách BorrowDTO để tổng hợp thông tin
+            for (BorrowDTO borrow : borrows) {
+                for (BorrowDetailDTO detail : borrow.getBorrowDetailDTO()) {
+                    String ISBN = detail.getISBN();
+                    String bookName = detail.getBookName();
+                    int quantity = detail.getQuantity();
 
-                // Cập nhật thông tin sách và mô tả
-                bookNameMap.put(ISBN, bookName);
-                descriptionMap.put(ISBN, description);
-
-                // Cập nhật tổng số lượt mượn cho ISBN hiện tại
-                borrowCountMap.put(ISBN, borrowCountMap.getOrDefault(ISBN, 0) + quantity);
+                    bookNameMap.put(ISBN, bookName);
+                    borrowCountMap.put(ISBN, borrowCountMap.getOrDefault(ISBN, 0) + quantity);
+                }
             }
-        }
 
-        // Tạo một danh sách từ borrowCountMap để sắp xếp theo số lượt mượn
-        List<Map.Entry<String, Integer>> sortedBorrowList = new ArrayList<>(borrowCountMap.entrySet());
-        sortedBorrowList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue())); // Sắp xếp từ cao đến thấp
+            // Sắp xếp danh sách theo số lượt mượn giảm dần
+            List<Map.Entry<String, Integer>> sortedBorrowList = new ArrayList<>(borrowCountMap.entrySet());
+            sortedBorrowList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue())); // Sắp xếp từ cao đến thấp
 
-        // Thêm các dòng đã sắp xếp vào model
-        for (Map.Entry<String, Integer> entry : sortedBorrowList) {
-            String ISBN = entry.getKey();
-            int totalBorrowCount = entry.getValue();
-            String bookName = bookNameMap.get(ISBN);
-            String description = descriptionMap.get(ISBN);
+            // Thêm các hàng dữ liệu vào model
+            for (Map.Entry<String, Integer> entry : sortedBorrowList) {
+                String ISBN = entry.getKey();
+                int totalBorrowCount = entry.getValue();
+                String bookName = bookNameMap.get(ISBN);
 
-            model.addRow(new Object[]{ISBN, bookName, description, totalBorrowCount});
-        }
+                // Lấy thông tin phiên bản sách qua BookBUS
+                String edition = bookBUS.getEditionByISBN(ISBN); 
+                if (edition == null) {
+                    edition = "Không xác định"; // Giá trị mặc định nếu không tìm thấy phiên bản
+                }
 
-        // Gán model cho bảng của bạn (ví dụ: mostReadBookNumberTable)
-        mostReadBookNumber.setModel(model);
+                // Thêm dòng vào model
+                model.addRow(new Object[]{ISBN, bookName, edition, totalBorrowCount});
+            }
+
+            // Cập nhật bảng với model mới
+            mostReadBookNumber.setModel(model);
+            } catch (IOException e) {
+                // Xử lý khi gặp lỗi IOException
+                System.out.println("Lỗi I/O: " + e.getMessage());
+                e.printStackTrace();
+            } catch (SQLException e) {
+                // Xử lý khi gặp lỗi SQL
+                System.out.println("Lỗi SQL: " + e.getMessage());
+                e.printStackTrace();
+            }
     }
     
     public java.sql.Date toDay(){
@@ -425,16 +437,31 @@ public class StatisticGUI extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startDateChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_startDateChooserPropertyChange
-        // TODO add your handling code here:
-        java.util.Date utilDateStart = (java.util.Date) startDateChooser.getDate();
+        java.util.Date currentDate = new java.util.Date();
+
+        java.util.Date selectedStartDate = (java.util.Date) startDateChooser.getDate();
+
+        if (selectedStartDate != null) {
+            if (selectedStartDate.after(currentDate)) {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Ngày bắt đầu không được vượt quá ngày hiện tại!",
+                    "Lỗi chọn ngày",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+
+                startDateChooser.setDate(previousStartDate);
+                return; 
+            } else {
+                previousStartDate = selectedStartDate;
+            }
+        }
+
         java.util.Date utilDateEnd = (java.util.Date) endDateChooser.getDate();
-        // Kiểm tra nếu utilDate không null để tránh lỗi NullPointerException
-        if (utilDateStart != null && utilDateEnd != null) {
-            // Ép kiểu java.util.Date sang java.sql.Date
-            java.sql.Date sqlDate1 = new java.sql.Date(utilDateStart.getTime());
+        if (selectedStartDate != null && utilDateEnd != null) {
+            java.sql.Date sqlDate1 = new java.sql.Date(selectedStartDate.getTime());
             java.sql.Date sqlDate2 = new java.sql.Date(utilDateEnd.getTime());
-            // Gọi hàm render() với sqlDate (nếu cần sử dụng)
-            render(sqlDate1, sqlDate2);
+            render(sqlDate1, sqlDate2); // Gọi hàm render với các giá trị ngày hợp lệ
         }
     }//GEN-LAST:event_startDateChooserPropertyChange
 
@@ -452,7 +479,7 @@ public class StatisticGUI extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_endDateChooserPropertyChange
 
-
+    private java.util.Date previousStartDate = null;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel borrowRecieptNumber;
     private javax.swing.JLabel brokeNumber;

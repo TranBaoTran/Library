@@ -887,4 +887,33 @@ public class BookDAO {
         }
         return flag;
     }
+    
+    public String getEditionByISBN(String ISBN) throws SQLException{
+        String edition = null; 
+        connectDB.connect();   
+
+        if (ConnectDB.conn != null) { // Kiểm tra kết nối
+            try {
+                // Câu lệnh SQL để truy vấn
+                String sql = "SELECT edition FROM versionofbook WHERE isbn = ?";
+                PreparedStatement stmt = ConnectDB.conn.prepareStatement(sql);
+                stmt.setString(1, ISBN); // Gán giá trị ISBN vào câu truy vấn
+
+                // Thực thi truy vấn
+                ResultSet rs = stmt.executeQuery();
+
+                // Xử lý kết quả
+                if (rs.next()) {
+                    edition = rs.getString("edition"); // Lấy giá trị cột edition
+                }
+
+            } catch (SQLException e) {
+                System.out.println("Lỗi khi truy vấn dữ liệu: " + e.getMessage());
+            } finally {
+                connectDB.disconnect(); // Đóng kết nối
+            }
+        }
+
+        return edition; // Trả về phiên bản hoặc null nếu không tìm thấy
+    }
 }

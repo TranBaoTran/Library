@@ -5,6 +5,7 @@ D:\Library\src\main\java\BUS\BorrowDetailBUS.java
 D:\Library\src\main\java\BUS\ImportBUS.java
 D:\Library\src\main\java\BUS\OtherBUS.java
 D:\Library\src\main\java\BUS\PersonBUS.java
+D:\Library\src\main\java\BUS\RoleBUS.java
 D:\Library\src\main\java\com\mycompany\library\Library.java
 D:\Library\src\main\java\connection\ConnectDB.java
 D:\Library\src\main\java\DAO\AccountDAO.java
@@ -15,6 +16,7 @@ D:\Library\src\main\java\DAO\DAO_Interface.java
 D:\Library\src\main\java\DAO\ImportDAO.java
 D:\Library\src\main\java\DAO\OtherDAO.java
 D:\Library\src\main\java\DAO\PersonDAO.java
+D:\Library\src\main\java\DAO\RoleDAO.java
 D:\Library\src\main\java\DTO\AccountDTO.java
 D:\Library\src\main\java\DTO\AuthorDTO.java
 D:\Library\src\main\java\DTO\BookDTO.java
@@ -48,12 +50,14 @@ D:\Library\src\main\java\GUI\ChoosePublisherDialog.java
 D:\Library\src\main\java\GUI\ChooseSupplierDialog.java
 D:\Library\src\main\java\GUI\HomePage.java
 D:\Library\src\main\java\GUI\ImportGUI.java
+D:\Library\src\main\java\GUI\Login.java
 D:\Library\src\main\java\GUI\Menu.java
 D:\Library\src\main\java\GUI\OtherGUI.java
 D:\Library\src\main\java\GUI\ReaderDetail.java
 D:\Library\src\main\java\GUI\ReaderGUI.java
 D:\Library\src\main\java\GUI\ReaderHistoryDialog.java
 D:\Library\src\main\java\GUI\Scanner_Dialog.java
+D:\Library\src\main\java\GUI\setBookLocationDialog.java
 D:\Library\src\main\java\GUI\StaffDetail.java
 D:\Library\src\main\java\GUI\StaffGUI.java
 D:\Library\src\main\java\GUI\StatisticGUI.java
