@@ -91,6 +91,10 @@ public class AddBookDialog extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(null, "Phiên bản không được bỏ trống");
             return true;
         }
+        if (addBook1.getPublisherLabel().equals("")){
+            JOptionPane.showMessageDialog(null, "Nhà xuất bản không được bỏ trống");
+            return true;
+        }
         if (addBook1.fullbook.getCategories().size() <= 0){
             JOptionPane.showMessageDialog(null, "Thể loại không được bỏ trống");
             return true;
@@ -104,7 +108,7 @@ public class AddBookDialog extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(null, "Giá tiền phải là số nguyên");
             return true;
         }
-        if (addBook1.imgURL.equals("") && (addBook1.fullbook.getImg().equals("/asset/img/AddImage.png") || addBook1.fullbook.getImg() == null)){
+        if (addBook1.imgURL.equals("") && (addBook1.fullbook.getImg() == null || addBook1.fullbook.getImg().equals("/asset/img/AddImage.png"))){
             JOptionPane.showMessageDialog(null, "Ảnh sách không được bỏ trống");
             return true;
         }
@@ -113,6 +117,10 @@ public class AddBookDialog extends javax.swing.JDialog {
     
     private void saveImage(String bookImgPath, String ISBN){
         File sourceFile = new File(bookImgPath);
+        if (!sourceFile.isFile()) {
+            JOptionPane.showMessageDialog(null, "Đường dẫn không phải là một tệp hợp lệ!");
+            return;
+        }
         Path targetPath = Path.of("src/main/resources/asset/img/book/", ISBN + ".jpg");
         
         try {

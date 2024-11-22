@@ -529,6 +529,10 @@ public class AddBook extends javax.swing.JPanel implements BarcodeListener{
         whid.setVisible(true);
     }//GEN-LAST:event_findPublisherButtonActionPerformed
 
+    public String getPublisherLabel(){
+        return publisherLabel.getText();
+    }
+    
     private void updatePublisher(){
         publisherLabel.setText(fullbook.getPublisher().getName());
     }

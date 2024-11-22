@@ -31,10 +31,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="editBookButton1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="editBookLocationButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="113" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -48,10 +46,7 @@
                   <Group type="102" attributes="0">
                       <Component id="jScrollPane1" min="-2" pref="495" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="editBookButton1" alignment="3" min="-2" pref="37" max="-2" attributes="0"/>
-                          <Component id="editBookLocationButton" alignment="3" min="-2" pref="37" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="editBookLocationButton" min="-2" pref="37" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="3" max="32767" attributes="0"/>
                   </Group>
                   <Component id="panelBorder1" max="32767" attributes="0"/>
@@ -513,29 +508,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="MyDesign.MyButton" name="editBookButton1">
-      <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="43" green="43" red="f8" type="rgb"/>
-        </Property>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/asset/img/icon/action-delete-white.png"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Xo&#xe1; s&#xe1;ch"/>
-        <Property name="color" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f1" green="f1" red="ff" type="rgb"/>
-        </Property>
-        <Property name="colorOver" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f1" green="f1" red="ff" type="rgb"/>
-        </Property>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Segoe UI" size="14" style="1"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBookButton1ActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="MyDesign.MyButton" name="editBookLocationButton">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">

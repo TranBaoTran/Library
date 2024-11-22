@@ -53,7 +53,6 @@ public class BookGUI extends javax.swing.JPanel {
         
         this.user = user;
         if(user == null || user.getRoleDTO().getId().equals("SV") || user.getRoleDTO().getId().equals("GV") || user.getRoleDTO().getId().equals("TT") || user.getRoleDTO().getId().equals("AD")){
-            editBookButton1.setVisible(false);
             editBookLocationButton.setVisible(false);
         }
         
@@ -107,7 +106,6 @@ public class BookGUI extends javax.swing.JPanel {
         myTable1 = new MyDesign.MyTable();
         jScrollPane1 = new javax.swing.JScrollPane();
         bookDetail = new GUI.BookDetail();
-        editBookButton1 = new MyDesign.MyButton();
         editBookLocationButton = new MyDesign.MyButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
@@ -369,18 +367,6 @@ public class BookGUI extends javax.swing.JPanel {
         bookDetail.setAutoscrolls(true);
         jScrollPane1.setViewportView(bookDetail);
 
-        editBookButton1.setForeground(new java.awt.Color(248, 67, 67));
-        editBookButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/action-delete-white.png"))); // NOI18N
-        editBookButton1.setText("Xoá sách");
-        editBookButton1.setColor(new java.awt.Color(255, 241, 241));
-        editBookButton1.setColorOver(new java.awt.Color(255, 241, 241));
-        editBookButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        editBookButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editBookButton1ActionPerformed(evt);
-            }
-        });
-
         editBookLocationButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/asset/img/icon/4.png"))); // NOI18N
         editBookLocationButton.setText("Sắp xếp sách");
         editBookLocationButton.setColorOver(new java.awt.Color(255, 241, 241));
@@ -404,10 +390,8 @@ public class BookGUI extends javax.swing.JPanel {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(editBookLocationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(52, 52, 52))))
+                        .addGap(113, 113, 113))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -417,9 +401,7 @@ public class BookGUI extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 495, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(editBookButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(editBookLocationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(editBookLocationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 3, Short.MAX_VALUE))
                     .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -448,11 +430,6 @@ public class BookGUI extends javax.swing.JPanel {
         txtFindByISBN1ActionPerformed(evt);
         cbAuthorCategoryPublisherActionPerformed(evt);
     }//GEN-LAST:event_btFindActionPerformed
-
-    private void editBookButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookButton1ActionPerformed
-        // TODO add your handling code here:
-        confirmDelete();
-    }//GEN-LAST:event_editBookButton1ActionPerformed
 
     private void editBookLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookLocationButtonActionPerformed
         // TODO add your handling code here:
@@ -615,7 +592,6 @@ public class BookGUI extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> cbAuthor;
     private javax.swing.JComboBox<String> cbCategory;
     private javax.swing.JComboBox<String> cbPublisher;
-    private MyDesign.MyButton editBookButton1;
     private MyDesign.MyButton editBookLocationButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
